@@ -1,0 +1,276 @@
+/* ============================================================
+   TEIXEIRA STYLE — produto.css
+   ============================================================ */
+
+/* Loading */
+.produto-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding-top: 84px;
+}
+.produto-loading__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #2a2a32;
+  border-top-color: #C9A66B;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Page */
+.produto-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 6rem 2rem 4rem;
+}
+.produto-page.hidden { display: none; }
+
+/* Breadcrumb */
+.produto-breadcrumb {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  font-size: .78rem;
+  color: #555;
+  margin-bottom: 2rem;
+}
+.produto-breadcrumb a { color: #777; transition: color .2s; }
+.produto-breadcrumb a:hover { color: #C9A66B; }
+.produto-breadcrumb span { color: #444; }
+
+/* Grid principal */
+.produto-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3.5rem;
+  align-items: start;
+}
+
+/* Galeria */
+.produto-gallery__main {
+  position: relative;
+  background: #0a0a0a;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 4/5;
+}
+.produto-gallery__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .4s ease;
+}
+.produto-gallery__main:hover .produto-gallery__img { transform: scale(1.04); }
+
+.produto-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: #C9A66B;
+  color: #0d0d12;
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: .2rem .6rem;
+  border-radius: 4px;
+}
+.produto-badge:empty { display: none; }
+
+.produto-gallery__thumbs {
+  display: flex;
+  gap: .5rem;
+  margin-top: .75rem;
+  flex-wrap: wrap;
+}
+.produto-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color .2s;
+  opacity: .65;
+}
+.produto-thumb:hover,
+.produto-thumb.active { border-color: #C9A66B; opacity: 1; }
+
+/* Info */
+.produto-cat {
+  color: #C9A66B;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  margin-bottom: .3rem;
+}
+.produto-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.6rem;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: .5rem;
+}
+.produto-rating {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+.produto-stars { color: #C9A66B; letter-spacing: 2px; }
+.produto-rating-count { color: #555; font-size: .78rem; }
+
+.produto-price {
+  font-size: 2rem;
+  color: #C9A66B;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.produto-desc {
+  color: #aaa;
+  line-height: 1.7;
+  font-size: .92rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #1e1e26;
+  padding-bottom: 1.5rem;
+}
+
+/* Label */
+.produto-label {
+  color: #777;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: .5rem;
+}
+
+/* Sizes */
+.produto-size-section { margin-bottom: 1.25rem; }
+.produto-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.produto-size-btn {
+  background: transparent;
+  border: 1.5px solid #333;
+  color: #ccc;
+  padding: .55rem 1.1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .82rem;
+  font-weight: 600;
+  transition: all .2s;
+  font-family: inherit;
+}
+.produto-size-btn:hover { border-color: rgba(201,166,107,.4); color: #C9A66B; }
+.produto-size-btn.selected { border-color: #C9A66B; background: #C9A66B; color: #0d0d12; }
+
+/* Quantidade */
+.produto-qty-section { margin-bottom: 1.5rem; }
+.produto-qty {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+.produto-qty__btn {
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid #333;
+  background: transparent;
+  color: #fff;
+  font-size: 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.produto-qty__btn:hover { border-color: #C9A66B; color: #C9A66B; }
+.produto-qty__val {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Botões de ação */
+.produto-actions {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+}
+.produto-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  font-size: .9rem;
+  padding: .9rem 1rem;
+}
+.produto-btn svg { width: 18px; height: 18px; }
+.produto-btn:disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+
+/* Specs */
+.produto-specs {
+  border-top: 1px solid #1e1e26;
+  padding-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+  margin-bottom: 1.5rem;
+}
+.produto-spec-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: .84rem;
+}
+.produto-spec-label { color: #555; }
+.produto-spec-value { color: #bbb; }
+
+/* WhatsApp link */
+.produto-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  color: #25D366;
+  font-size: .84rem;
+  font-weight: 600;
+  transition: opacity .2s;
+}
+.produto-whatsapp:hover { opacity: .75; }
+
+/* Toast */
+.produto-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #C9A66B;
+  color: #0B0B0F;
+  padding: .75rem 1.75rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: .9rem;
+  z-index: 999;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.produto-toast.hidden { display: none; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .produto-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .produto-title { font-size: 2rem; }
+  .produto-page { padding: 5rem 1rem 3rem; }
+}

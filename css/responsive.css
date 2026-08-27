@@ -1,0 +1,357 @@
+/* ============================================================
+   TEIXEIRA STYLE — responsive.css
+   Breakpoints: 1200px | 1024px | 768px | 480px
+   ============================================================ */
+
+/* ============================================================
+   LARGE DESKTOP (≤ 1200px)
+   ============================================================ */
+@media (max-width: 1200px) {
+  :root {
+    --container-pad: 1.5rem;
+  }
+
+  .categories__grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .highlights__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .footer__grid {
+    grid-template-columns: 1.5fr 1fr 1.5fr 1.5fr;
+    gap: 3rem;
+  }
+}
+
+/* ============================================================
+   TABLET / SMALL LAPTOP (≤ 1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  /* Navbar */
+  .navbar__menu,
+  .navbar__cta {
+    display: none;
+  }
+
+  .navbar__hamburger {
+    display: flex;
+  }
+
+  /* Body cursor hidden on touch devices */
+  body {
+    cursor: auto;
+  }
+
+  .cursor,
+  .cursor-follower {
+    display: none;
+  }
+
+  /* Hero */
+  .hero__title {
+    font-size: clamp(4rem, 12vw, 7rem);
+  }
+
+  /* Categories */
+  .categories__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Highlights */
+  .highlights__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* About */
+  .about__grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .about__image-wrap {
+    max-width: 600px;
+    margin-inline: auto;
+  }
+
+  .about__img-accent {
+    display: none;
+  }
+
+  /* Differentials */
+  .differentials__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Instagram */
+  .instagram__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Footer */
+  .footer__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+}
+
+/* ============================================================
+   TABLET PORTRAIT (≤ 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  :root {
+    --container-pad: 1.2rem;
+    --space-xl: 4rem;
+    --space-lg: 2.5rem;
+  }
+
+  /* Section titles */
+  .section-title {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  /* Navbar */
+  .navbar {
+    padding: 0.7rem 0;
+  }
+
+  .navbar.scrolled {
+    padding: 0.45rem 0;
+  }
+
+  /* Hero */
+  .hero__title {
+    font-size: clamp(3.5rem, 16vw, 6rem);
+  }
+
+  .hero__subtitle {
+    font-size: 0.95rem;
+  }
+
+  .hero__actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero__actions .btn {
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+  }
+
+  /* Categories */
+  .categories__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .category-card {
+    aspect-ratio: 1;
+  }
+
+  .category-card__name {
+    font-size: 1.6rem;
+  }
+
+  /* Highlights */
+  .highlights__grid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin-inline: auto;
+  }
+
+  /* Banner */
+  .banner__title {
+    font-size: clamp(3.5rem, 16vw, 6rem);
+  }
+
+  /* About */
+  .about__stats {
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  /* Differentials */
+  .differentials__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .diff-card {
+    padding: 2rem 1.5rem;
+  }
+
+  /* Instagram */
+  .instagram__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* CTA */
+  .cta-section__title {
+    font-size: clamp(2.2rem, 10vw, 3.5rem);
+  }
+
+  /* Footer */
+  .footer__grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .footer__bottom-inner {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  /* Back to top */
+  .back-to-top {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* ============================================================
+   MOBILE (≤ 480px)
+   ============================================================ */
+@media (max-width: 480px) {
+  :root {
+    --container-pad: 1rem;
+  }
+
+  /* Navbar */
+  .navbar__logo-img {
+    height: 38px;
+  }
+
+  /* Hero */
+  .hero__title {
+    font-size: clamp(3rem, 18vw, 5rem);
+  }
+
+  .hero__eyebrow {
+    font-size: 0.65rem;
+  }
+
+  .hero__subtitle {
+    font-size: 0.9rem;
+  }
+
+  /* Categories grid → 1 column on very small screens */
+  .categories__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-card {
+    aspect-ratio: 4/3;
+  }
+
+  /* Highlights 1 col */
+  .highlights__grid {
+    max-width: 100%;
+  }
+
+  /* Banner */
+  .banner {
+    min-height: 400px;
+  }
+
+  .banner__title {
+    font-size: clamp(3rem, 20vw, 5rem);
+  }
+
+  /* About stats */
+  .about__stats {
+    gap: 1.5rem;
+  }
+
+  .about__stat-number {
+    font-size: 2rem;
+  }
+
+  /* Differentials 1 col */
+  .differentials__grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Instagram 2 col */
+  .instagram__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Mobile menu link size */
+  .navbar__mobile-link {
+    font-size: 2rem;
+  }
+
+  /* Buttons full width on small */
+  .btn--lg {
+    padding: 1rem 2rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* ============================================================
+   EXTRA SMALL (≤ 360px)
+   ============================================================ */
+@media (max-width: 360px) {
+  .hero__title {
+    font-size: clamp(2.5rem, 20vw, 4rem);
+  }
+
+  .navbar__logo-img {
+    height: 32px;
+  }
+
+  .instagram__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============================================================
+   TOUCH DEVICES — disable cursor effects
+   ============================================================ */
+@media (hover: none) {
+  .cursor,
+  .cursor-follower {
+    display: none !important;
+  }
+
+  body {
+    cursor: auto !important;
+  }
+
+  button,
+  a,
+  .category-card,
+  .product-card,
+  .instagram__item {
+    cursor: pointer !important;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION — respect user preference
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .hero__scroll-line {
+    animation: none;
+  }
+
+  .hero__scroll-indicator {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

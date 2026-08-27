@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Teixeira Style</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <!-- ==============================
+       LOGIN SCREEN
+  ================================ -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-brand">
+        <img src="assets/images/imagem.png" alt="Teixeira Style" class="login-logo" />
+        <p class="login-subtitle">Painel Administrativo</p>
+      </div>
+      <form class="login-form" id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Usuário</label>
+          <input type="text" class="form-input" id="loginUser" placeholder="admin" autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Senha</label>
+          <div class="input-wrap">
+            <input type="password" class="form-input" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
+            <button type="button" class="input-eye" id="togglePass">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <p class="login-error" id="loginError"></p>
+        <button type="submit" class="btn-login">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==============================
+       ADMIN PANEL
+  ================================ -->
+  <div class="admin-panel hidden" id="adminPanel">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__brand">
+        <img src="assets/images/imagem.png" alt="Teixeira Style" class="sidebar__logo" />
+      </div>
+
+      <nav class="sidebar__nav">
+        <a href="#" class="sidebar__link active" data-page="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="sidebar__link" data-page="products">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span>Produtos</span>
+        </a>
+        <a href="#" class="sidebar__link" data-page="categories">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+          <span>Categorias</span>
+        </a>
+        <a href="#" class="sidebar__link" data-page="customers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          <span>Contatos</span>
+        </a>
+        <a href="#" class="sidebar__link" data-page="orders">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span>Pedidos</span>
+        </a>
+        <a href="#" class="sidebar__link" data-page="gallery">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Galeria</span>
+        </a>
+        <a href="#" class="sidebar__link" data-page="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span>Configurações</span>
+        </a>
+      </nav>
+
+      <div class="sidebar__footer">
+        <button class="sidebar__logout" id="logoutBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Sair</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+
+      <!-- TOPBAR -->
+      <header class="admin-topbar">
+        <button class="topbar-toggle" id="sidebarToggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Pesquisar..." class="topbar-search-input" />
+        </div>
+        <div class="topbar-actions">
+          <button class="topbar-btn notification-btn" id="notifBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="notif-dot"></span>
+          </button>
+          <div class="topbar-user">
+            <div class="topbar-avatar">A</div>
+            <span class="topbar-username">Admin</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGES -->
+      <div class="admin-content">
+
+        <!-- === DASHBOARD === -->
+        <section class="page active" id="page-dashboard">
+          <div class="page-header">
+            <h1 class="page-title">Dashboard</h1>
+            <span class="page-date" id="todayDate"></span>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card__icon stat-card__icon--gold">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              </div>
+              <div class="stat-card__info">
+                <p class="stat-card__label">Produtos no catálogo</p>
+                <h3 class="stat-card__value" data-stat="products">523</h3>
+                <span class="stat-card__change positive">+12 adicionados este mês</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon stat-card__icon--blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+              <div class="stat-card__info">
+                <p class="stat-card__label">Imagens na galeria</p>
+                <h3 class="stat-card__value" data-stat="gallery">38</h3>
+                <span class="stat-card__change positive">+5 este mês</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon stat-card__icon--green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              </div>
+              <div class="stat-card__info">
+                <p class="stat-card__label">Contatos</p>
+                <h3 class="stat-card__value" data-stat="contacts">1.247</h3>
+                <span class="stat-card__change positive">+34 novos este mês</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon stat-card__icon--red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+              </div>
+              <div class="stat-card__info">
+                <p class="stat-card__label">Categorias ativas</p>
+                <h3 class="stat-card__value" data-stat="categories">5</h3>
+                <span class="stat-card__change positive">Catálogo organizado</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="dash-card">
+              <div class="dash-card__header">
+                <h3 class="dash-card__title">Contatos Recentes via WhatsApp</h3>
+                <button class="dash-card__link" data-goto="customers">Ver todos</button>
+              </div>
+              <table class="mini-table">
+                <thead><tr><th>Nome</th><th>Telefone</th><th>Cidade</th><th>Data</th></tr></thead>
+                <tbody id="dashContactsBody">
+                  <tr><td>Lucas Souza</td><td>(43) 99999-0001</td><td>Ribeirão Claro</td><td>17/07</td></tr>
+                  <tr><td>Ana Lima</td><td>(43) 99999-0002</td><td>Jacarezinho</td><td>17/07</td></tr>
+                  <tr><td>Rafael Costa</td><td>(43) 99999-0003</td><td>Ribeirão Claro</td><td>16/07</td></tr>
+                  <tr><td>Juliana Melo</td><td>(43) 99999-0004</td><td>Carlópolis</td><td>16/07</td></tr>
+                  <tr><td>Pedro Alves</td><td>(43) 99999-0005</td><td>Ribeirão Claro</td><td>15/07</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="dash-card">
+              <div class="dash-card__header">
+                <h3 class="dash-card__title">Produtos em Destaque</h3>
+                <button class="dash-card__link" data-goto="products">Ver todos</button>
+              </div>
+              <div class="top-products">
+                <div class="top-product">
+                  <div class="top-product__rank">1</div>
+                  <div class="top-product__info"><p class="top-product__name">Camiseta Oversize Preta</p><p class="top-product__cat">Camisetas</p></div>
+                  <span class="top-product__sales">Ativo</span>
+                </div>
+                <div class="top-product">
+                  <div class="top-product__rank">2</div>
+                  <div class="top-product__info"><p class="top-product__name">Moletom Essential</p><p class="top-product__cat">Moletons</p></div>
+                  <span class="top-product__sales">Ativo</span>
+                </div>
+                <div class="top-product">
+                  <div class="top-product__rank">3</div>
+                  <div class="top-product__info"><p class="top-product__name">Boné Trucker Branco</p><p class="top-product__cat">Bonés</p></div>
+                  <span class="top-product__sales">Ativo</span>
+                </div>
+                <div class="top-product">
+                  <div class="top-product__rank">4</div>
+                  <div class="top-product__info"><p class="top-product__name">Calça Cargo Bege</p><p class="top-product__cat">Calças</p></div>
+                  <span class="top-product__sales">Ativo</span>
+                </div>
+                <div class="top-product">
+                  <div class="top-product__rank">5</div>
+                  <div class="top-product__info"><p class="top-product__name">Jaqueta Corta-Vento</p><p class="top-product__cat">Jaquetas</p></div>
+                  <span class="top-product__sales">Inativo</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card">
+              <div class="dash-card__header">
+                <h3 class="dash-card__title">Produtos por Categoria</h3>
+              </div>
+              <div class="category-bars">
+                <div class="cat-bar"><span class="cat-bar__label">Camisetas</span><div class="cat-bar__track"><div class="cat-bar__fill" style="width:72%"></div></div><span class="cat-bar__pct">72%</span></div>
+                <div class="cat-bar"><span class="cat-bar__label">Moletons</span><div class="cat-bar__track"><div class="cat-bar__fill" style="width:55%"></div></div><span class="cat-bar__pct">55%</span></div>
+                <div class="cat-bar"><span class="cat-bar__label">Bonés</span><div class="cat-bar__track"><div class="cat-bar__fill" style="width:43%"></div></div><span class="cat-bar__pct">43%</span></div>
+                <div class="cat-bar"><span class="cat-bar__label">Calças</span><div class="cat-bar__track"><div class="cat-bar__fill" style="width:38%"></div></div><span class="cat-bar__pct">38%</span></div>
+                <div class="cat-bar"><span class="cat-bar__label">Jaquetas</span><div class="cat-bar__track"><div class="cat-bar__fill" style="width:21%"></div></div><span class="cat-bar__pct">21%</span></div>
+              </div>
+            </div>
+
+            <div class="dash-card">
+              <div class="dash-card__header">
+                <h3 class="dash-card__title">Atividade Rápida</h3>
+              </div>
+              <div class="activity-feed">
+                <div class="activity-item">
+                  <div class="activity-dot activity-dot--gold"></div>
+                  <div><p class="activity-text">Produto <strong>Camiseta Oversize</strong> adicionado ao catálogo</p><span class="activity-time">há 20 min</span></div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot activity-dot--green"></div>
+                  <div><p class="activity-text">Contato recebido de <strong>Lucas Souza</strong> via WhatsApp</p><span class="activity-time">há 1h</span></div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot activity-dot--blue"></div>
+                  <div><p class="activity-text">Produto <strong>Moletom Essential</strong> atualizado</p><span class="activity-time">há 3h</span></div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot activity-dot--red"></div>
+                  <div><p class="activity-text">Produto <strong>Boné Trucker</strong> marcado como indisponível</p><span class="activity-time">há 5h</span></div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot activity-dot--gold"></div>
+                  <div><p class="activity-text">Nova foto adicionada à <strong>Galeria</strong></p><span class="activity-time">há 8h</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- === PRODUTOS === -->
+        <section class="page" id="page-products">
+          <div class="page-header">
+            <h1 class="page-title">Produtos</h1>
+            <button class="btn-primary" id="addProductBtn">+ Novo Produto</button>
+          </div>
+
+          <div class="table-toolbar">
+            <input type="text" class="toolbar-search" placeholder="Buscar produto..." id="productSearch" />
+            <select class="toolbar-select" id="productCatFilter">
+              <option value="">Todas as categorias</option>
+              <option>Camisetas</option>
+              <option>Moletons</option>
+              <option>Bonés</option>
+              <option>Calças</option>
+              <option>Jaquetas</option>
+            </select>
+            <select class="toolbar-select" id="productStatusFilter">
+              <option value="">Todos os status</option>
+              <option>Disponível</option>
+              <option>Indisponível</option>
+              <option>Inativo</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table" id="productsTable">
+              <thead>
+                <tr>
+                  <th><input type="checkbox" class="check-all" id="checkAllProducts" /></th>
+                  <th>Produto</th>
+                  <th>Categoria</th>
+                  <th>Referência</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="productsBody">
+                <tr>
+                  <td><input type="checkbox" /></td>
+                  <td><div class="product-cell"><div class="product-thumb"></div><span>Camiseta Oversize Preta</span></div></td>
+                  <td>Camisetas</td><td>CAM-001</td>
+                  <td><span class="badge badge--success">Disponível</span></td>
+                  <td><div class="action-btns"><button class="action-btn action-btn--edit" title="Editar">✏️</button><button class="action-btn action-btn--del" title="Excluir">🗑️</button></div></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox" /></td>
+                  <td><div class="product-cell"><div class="product-thumb"></div><span>Moletom Essential Cinza</span></div></td>
+                  <td>Moletons</td><td>MOL-001</td>
+                  <td><span class="badge badge--success">Disponível</span></td>
+                  <td><div class="action-btns"><button class="action-btn action-btn--edit" title="Editar">✏️</button><button class="action-btn action-btn--del" title="Excluir">🗑️</button></div></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox" /></td>
+                  <td><div class="product-cell"><div class="product-thumb"></div><span>Boné Trucker Branco</span></div></td>
+                  <td>Bonés</td><td>BON-001</td>
+                  <td><span class="badge badge--danger">Indisponível</span></td>
+                  <td><div class="action-btns"><button class="action-btn action-btn--edit" title="Editar">✏️</button><button class="action-btn action-btn--del" title="Excluir">🗑️</button></div></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox" /></td>
+                  <td><div class="product-cell"><div class="product-thumb"></div><span>Calça Cargo Bege</span></div></td>
+                  <td>Calças</td><td>CAL-001</td>
+                  <td><span class="badge badge--success">Disponível</span></td>
+                  <td><div class="action-btns"><button class="action-btn action-btn--edit" title="Editar">✏️</button><button class="action-btn action-btn--del" title="Excluir">🗑️</button></div></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox" /></td>
+                  <td><div class="product-cell"><div class="product-thumb"></div><span>Jaqueta Corta-Vento</span></div></td>
+                  <td>Jaquetas</td><td>JAQ-001</td>
+                  <td><span class="badge badge--warning">Inativo</span></td>
+                  <td><div class="action-btns"><button class="action-btn action-btn--edit" title="Editar">✏️</button><button class="action-btn action-btn--del" title="Excluir">🗑️</button></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-footer">
+            <span class="table-count">Mostrando 5 de 523 produtos</span>
+            <div class="pagination">
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <span class="page-ellipsis">…</span>
+              <button class="page-btn">52</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- === CATEGORIAS === -->
+        <section class="page" id="page-categories">
+          <div class="page-header">
+            <h1 class="page-title">Categorias</h1>
+            <button class="btn-primary" id="addCatBtn">+ Nova Categoria</button>
+          </div>
+          <div class="categories-grid" id="categoriesGrid">
+            <div class="cat-manage-card">
+              <div class="cat-manage-card__img" style="background:#1a1a2e"></div>
+              <div class="cat-manage-card__body">
+                <h4>Masculino</h4>
+                <p>148 produtos</p>
+              </div>
+              <div class="cat-manage-card__actions">
+                <button class="action-btn action-btn--edit">✏️</button>
+                <button class="action-btn action-btn--del">🗑️</button>
+              </div>
+            </div>
+            <div class="cat-manage-card">
+              <div class="cat-manage-card__img" style="background:#2e1a1a"></div>
+              <div class="cat-manage-card__body">
+                <h4>Feminino</h4>
+                <p>112 produtos</p>
+              </div>
+              <div class="cat-manage-card__actions">
+                <button class="action-btn action-btn--edit">✏️</button>
+                <button class="action-btn action-btn--del">🗑️</button>
+              </div>
+            </div>
+            <div class="cat-manage-card">
+              <div class="cat-manage-card__img" style="background:#1a2e1a"></div>
+              <div class="cat-manage-card__body">
+                <h4>Bonés</h4>
+                <p>63 produtos</p>
+              </div>
+              <div class="cat-manage-card__actions">
+                <button class="action-btn action-btn--edit">✏️</button>
+                <button class="action-btn action-btn--del">🗑️</button>
+              </div>
+            </div>
+            <div class="cat-manage-card">
+              <div class="cat-manage-card__img" style="background:#2e2e1a"></div>
+              <div class="cat-manage-card__body">
+                <h4>Acessórios</h4>
+                <p>47 produtos</p>
+              </div>
+              <div class="cat-manage-card__actions">
+                <button class="action-btn action-btn--edit">✏️</button>
+                <button class="action-btn action-btn--del">🗑️</button>
+              </div>
+            </div>
+            <div class="cat-manage-card">
+              <div class="cat-manage-card__img" style="background:#1a2e2e"></div>
+              <div class="cat-manage-card__body">
+                <h4>Calçados</h4>
+                <p>29 produtos</p>
+              </div>
+              <div class="cat-manage-card__actions">
+                <button class="action-btn action-btn--edit">✏️</button>
+                <button class="action-btn action-btn--del">🗑️</button>
+              </div>
+            </div>
+            <div class="cat-manage-card cat-manage-card--add" id="addCatCard">
+              <div class="cat-add-icon">+</div>
+              <p>Nova categoria</p>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- === CONTATOS === -->
+        <section class="page" id="page-customers">
+          <div class="page-header">
+            <h1 class="page-title">Contatos</h1>
+            <input type="text" class="toolbar-search" placeholder="Buscar contato..." style="width:260px" />
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Nome</th><th>Telefone</th><th>Cidade</th><th>Interesse</th><th>Data do contato</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="contactsBody">
+                <tr><td>Lucas Souza</td><td>(43) 9 9999-0001</td><td>Ribeirão Claro</td><td>Camisetas</td><td>17/07/2025</td></tr>
+                <tr><td>Ana Lima</td><td>(43) 9 9999-0002</td><td>Jacarezinho</td><td>Moletons</td><td>17/07/2025</td></tr>
+                <tr><td>Rafael Costa</td><td>(43) 9 9999-0003</td><td>Ribeirão Claro</td><td>Bonés</td><td>16/07/2025</td></tr>
+                <tr><td>Juliana Melo</td><td>(43) 9 9999-0004</td><td>Carlópolis</td><td>Calças</td><td>16/07/2025</td></tr>
+                <tr><td>Pedro Alves</td><td>(43) 9 9999-0005</td><td>Ribeirão Claro</td><td>Jaquetas</td><td>15/07/2025</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- === PEDIDOS === -->
+        <section class="page" id="page-orders">
+          <div class="page-header">
+            <h1 class="page-title">Pedidos</h1>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Pedido</th><th>Cliente</th><th>WhatsApp</th><th>Total</th><th>Pagamento</th><th>Status</th><th>Data</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- === GALERIA === -->
+        <section class="page" id="page-gallery">
+          <div class="page-header">
+            <h1 class="page-title">Galeria</h1>
+            <label class="btn-primary btn-upload" for="uploadInput">+ Upload Imagem</label>
+            <input type="file" id="uploadInput" accept="image/*" multiple hidden />
+          </div>
+          <div class="gallery-grid" id="galleryGrid">
+            <div class="gallery-item">
+              <img src="assets/images/camiseta.png" alt="camiseta" />
+              <div class="gallery-item__overlay">
+                <button class="gallery-btn">🗑️</button>
+              </div>
+              <span class="gallery-item__name">camiseta.png</span>
+            </div>
+            <div class="gallery-item">
+              <img src="assets/images/camiseta2.png" alt="camiseta2" />
+              <div class="gallery-item__overlay">
+                <button class="gallery-btn">🗑️</button>
+              </div>
+              <span class="gallery-item__name">camiseta2.png</span>
+            </div>
+            <div class="gallery-item">
+              <img src="assets/images/imagem.png" alt="logo" style="background:#111" />
+              <div class="gallery-item__overlay">
+                <button class="gallery-btn">🗑️</button>
+              </div>
+              <span class="gallery-item__name">imagem.png</span>
+            </div>
+            <label class="gallery-upload-area" for="uploadInput">
+              <span>+</span>
+              <p>Adicionar</p>
+            </label>
+          </div>
+        </section>
+
+        <!-- === CONFIGURAÇÕES === -->
+        <section class="page" id="page-settings">
+          <div class="page-header">
+            <h1 class="page-title">Configurações</h1>
+          </div>
+          <div class="settings-grid">
+            <div class="settings-card">
+              <h3 class="settings-card__title">Informações da Loja</h3>
+              <div class="form-group">
+                <label class="form-label">Nome da Loja</label>
+                <input type="text" class="form-input" value="Teixeira Style" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">WhatsApp</label>
+                <input type="text" class="form-input" value="+55 43 96019761" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Instagram</label>
+                <input type="text" class="form-input" value="@loja_teixeira_style" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Endereço</label>
+                <input type="text" class="form-input" value="Rua Cel. Joaquim Ribeiro Gomes, 20 — Ribeirão Claro/PR" />
+              </div>
+              <button class="btn-primary" style="margin-top:0.5rem">Salvar</button>
+            </div>
+
+            <div class="settings-card">
+              <h3 class="settings-card__title">Conta Admin</h3>
+              <div class="form-group">
+                <label class="form-label">Usuário</label>
+                <input type="text" class="form-input" id="settingsUsername" value="admin" readonly />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Senha Atual</label>
+                <input type="password" class="form-input" id="settingsCurrentPwd" placeholder="••••••••" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nova Senha</label>
+                <input type="password" class="form-input" id="settingsNewPwd" placeholder="••••••••" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirmar Senha</label>
+                <input type="password" class="form-input" id="settingsConfirmPwd" placeholder="••••••••" />
+              </div>
+              <button class="btn-primary" id="settingsPwdBtn" style="margin-top:0.5rem">Atualizar</button>
+            </div>
+
+            <div class="settings-card">
+              <h3 class="settings-card__title">Aparência do Site</h3>
+              <div class="form-group">
+                <label class="form-label">Cor de Destaque</label>
+                <div class="color-pick-row">
+                  <input type="color" class="color-pick" value="#C9A66B" />
+                  <input type="text" class="form-input" value="#C9A66B" style="width:120px" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Texto da Topbar</label>
+                <input type="text" class="form-input" value="Atendimento via WhatsApp · Ribeirão Claro — PR · @loja_teixeira_style" />
+              </div>
+              <div class="toggle-row">
+                <span>Barra de anúncios ativa</span>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <span>Modo manutenção</span>
+                <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+              </div>
+              <button class="btn-primary" style="margin-top:1rem">Salvar</button>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /.admin-content -->
+    </main>
+  </div>
+
+  <!-- MODAL PRODUTO -->
+  <div class="modal-overlay hidden" id="productModal">
+    <div class="modal">
+      <div class="modal__header">
+        <h3 class="modal__title" id="modalTitle">Novo Produto</h3>
+        <button class="modal__close" id="modalClose">✕</button>
+      </div>
+      <form class="modal__body" id="productForm">
+        <div class="modal-grid">
+          <div class="form-group">
+            <label class="form-label">Nome do Produto</label>
+            <input type="text" class="form-input" id="modalProductName" placeholder="Ex: Camiseta Oversize Preta" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Categoria</label>
+            <select class="form-input" id="modalCatSelect">
+              <option>Camisetas</option><option>Moletons</option><option>Bonés</option><option>Calças</option><option>Jaquetas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Código de Referência</label>
+            <input type="text" class="form-input" id="modalProductRef" placeholder="Ex: CAM-001" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preço (R$)</label>
+            <input type="number" class="form-input" id="modalProductPrice" step="0.01" min="0" placeholder="0,00" />
+          </div>
+          <div class="form-group form-group--full">
+            <label class="form-label">Descrição</label>
+            <textarea class="form-input form-textarea" id="modalProductDesc" placeholder="Descreva o produto..."></textarea>
+          </div>
+          <div class="form-group form-group--full">
+            <label class="form-label">Tamanhos disponíveis</label>
+            <div class="size-check-row">
+              <label class="size-check"><input type="checkbox" /><span>P</span></label>
+              <label class="size-check"><input type="checkbox" checked /><span>M</span></label>
+              <label class="size-check"><input type="checkbox" checked /><span>G</span></label>
+              <label class="size-check"><input type="checkbox" /><span>GG</span></label>
+              <label class="size-check"><input type="checkbox" /><span>XG</span></label>
+            </div>
+          </div>
+          <div class="form-group form-group--full">
+            <label class="form-label">Imagem</label>
+            <label class="file-drop" for="productImgInput">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Clique ou arraste uma imagem</span>
+            </label>
+            <input type="file" id="productImgInput" accept="image/*" hidden />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Disponibilidade</label>
+            <select class="form-input" id="modalProductAvail"><option value="available">Disponível</option><option value="unavailable">Indisponível</option></select>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="btn-secondary" id="modalCancel">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Produto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast hidden" id="toast"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

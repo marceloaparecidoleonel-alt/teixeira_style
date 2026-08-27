@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — Teixeira Style</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Teko:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/catalogo.css" />
+  <link rel="stylesheet" href="css/cart.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar__container">
+      <a href="carrinho.html" class="navbar__back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Carrinho
+      </a>
+      <a href="index.html" class="navbar__brand">
+        <img src="assets/images/imagem.png" alt="Teixeira Style" class="navbar__logo" />
+      </a>
+      <div class="navbar__actions">
+        <button class="navbar__icon-btn auth-btn" data-action="login" title="Entrar / Sair">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+        <span class="auth-name navbar__user-name"></span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="checkout-page">
+    <h1 class="checkout-page__title">Finalizar Pedido</h1>
+
+    <div class="checkout-grid">
+      <section class="checkout-form">
+        <h2>Dados de entrega</h2>
+        <div class="form-group">
+          <label class="form-label">Nome completo</label>
+          <input type="text" class="form-input" id="fullName" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">WhatsApp</label>
+          <input type="tel" class="form-input" id="whatsapp" placeholder="(43) 90000-0000" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cidade/UF</label>
+          <input type="text" class="form-input" id="city" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Endereço completo</label>
+          <textarea class="form-input" id="address" rows="3"></textarea>
+        </div>
+
+        <h2 style="margin-top:1.5rem">Forma de pagamento</h2>
+        <div class="payment-methods">
+
+          <!-- ==========================================
+               MERCADO PAGO — integração futura
+               Ao integrar: remover o atributo disabled,
+               descomentar o SDK no final do body e
+               chamar processMercadoPago(order) em checkout.js
+          =========================================== -->
+          <label class="payment-option payment-option--soon">
+            <input type="radio" name="payment" value="mercadopago" disabled />
+            <span>
+              <svg width="20" height="20" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:6px"><rect width="64" height="64" rx="12" fill="#00BCFF" opacity=".15"/><text x="8" y="44" font-size="28" font-family="sans-serif" fill="#00BCFF" font-weight="bold">MP</text></svg>
+              Mercado Pago
+              <span class="badge-soon">Em breve</span>
+            </span>
+          </label>
+
+          <label class="payment-option">
+            <input type="radio" name="payment" value="whatsapp" checked />
+            <span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;color:#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.116 1.524 5.847L.057 23.882l6.196-1.625A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.368l-.36-.214-3.717.975.992-3.625-.235-.372A9.818 9.818 0 012.182 12C2.182 6.578 6.578 2.182 12 2.182S21.818 6.578 21.818 12 17.422 21.818 12 21.818z"/></svg>
+              WhatsApp (confirmar pedido)
+            </span>
+          </label>
+        </div>
+
+        <div class="whatsapp-info-box" id="whatsappInfoBox">
+          <p>Ao finalizar, você será redirecionado ao WhatsApp para confirmar o pedido com a nossa equipe.</p>
+        </div>
+      </section>
+
+      <aside class="checkout-summary">
+        <h2>Resumo do pedido</h2>
+        <div class="checkout-items" id="checkoutItems"></div>
+        <div class="summary-row summary-row--total"><span>Total</span><span id="totalPrice">R$ 0,00</span></div>
+        <button class="btn btn--gold btn--full" id="finishOrder">Finalizar pedido</button>
+        <p class="checkout-note">Após finalizar, envie o comprovante pelo WhatsApp.</p>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="cat-footer">
+    <div class="cat-footer__inner">
+      <img src="assets/images/imagem.png" alt="Teixeira Style" class="cat-footer__logo" />
+      <p>R. Cel. Joaquim Ribeiro Gomes, 20 · Ribeirão Claro — PR, 86410-000 · (43) 9 9601-9761 · @loja_teixeira_style</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/checkout.js"></script>
+
+  <!-- ======================================================
+       MERCADO PAGO SDK — descomentar ao integrar
+       Substituir YOUR_PUBLIC_KEY pela chave pública real
+       Documentação: https://www.mercadopago.com.br/developers
+  =======================================================
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <script>
+    window.mp = new MercadoPago('YOUR_PUBLIC_KEY', { locale: 'pt-BR' });
+  </script>
+  -->
+</body>
+</html>

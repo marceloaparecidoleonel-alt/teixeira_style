@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meus Pedidos — Teixeira Style</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Teko:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/catalogo.css" />
+  <link rel="stylesheet" href="css/cart.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar__container">
+      <a href="index.html" class="navbar__back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Início
+      </a>
+      <a href="index.html" class="navbar__brand">
+        <img src="assets/images/imagem.png" alt="Teixeira Style" class="navbar__logo" />
+      </a>
+      <div class="navbar__actions">
+        <button class="navbar__icon-btn auth-btn" data-action="login" title="Entrar / Sair">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+        <span class="auth-name navbar__user-name"></span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="orders-page">
+    <h1 class="orders-page__title">Meus Pedidos</h1>
+    <div id="ordersList" class="orders-list"></div>
+  </main>
+
+  <footer class="cat-footer">
+    <div class="cat-footer__inner">
+      <img src="assets/images/imagem.png" alt="Teixeira Style" class="cat-footer__logo" />
+      <p>R. Cel. Joaquim Ribeiro Gomes, 20 · Ribeirão Claro — PR, 86410-000 · (43) 9 9601-9761 · @loja_teixeira_style</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pedidos.js"></script>
+</body>
+</html>

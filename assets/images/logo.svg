@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" fill="none">
+  <!-- T mark -->
+  <rect x="0" y="8" width="32" height="4" fill="#FFFFFF"/>
+  <rect x="14" y="8" width="4" height="44" fill="#FFFFFF"/>
+  <!-- Wordmark -->
+  <text x="46" y="38" font-family="'Arial Black', sans-serif" font-size="22" font-weight="900" letter-spacing="3" fill="#FFFFFF">TEIXEIRA</text>
+  <text x="46" y="56" font-family="'Arial Black', sans-serif" font-size="13" font-weight="400" letter-spacing="6" fill="#FFFFFF">STYLE</text>
+</svg>

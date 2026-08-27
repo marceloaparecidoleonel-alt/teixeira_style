@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Teixeira Style — Moda Streetwear Premium. As melhores peças para quem transforma estilo em identidade." />
+  <title>TEIXEIRA STYLE — Streetwear Premium</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@600;700;800;900&family=Russo+One&family=Teko:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="stylesheet" href="css/cart.css" />
+</head>
+<body>
+
+  <!-- ==============================
+       CURSOR PERSONALIZADO
+  ================================ -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-follower" id="cursorFollower"></div>
+
+  <!-- ==============================
+       ANNOUNCEMENT BAR
+  ================================ -->
+  <div class="topbar" id="topbar">
+    <div class="topbar__track">
+      <div class="topbar__inner">
+        <span class="topbar__item">✦ Streetwear Premium em Ribeirão Claro — PR</span>
+        <span class="topbar__sep">|</span>
+        <span class="topbar__item">✦ Frete para todo o Brasil</span>
+        <span class="topbar__sep">|</span>
+        <span class="topbar__item">✦ Atendimento via WhatsApp: (43) 9 9601-9761</span>
+        <span class="topbar__sep">|</span>
+        <span class="topbar__item">✦ Instagram: @loja_teixeira_style</span>
+        <span class="topbar__sep">|</span>
+        <span class="topbar__item">✦ Novas peças toda semana</span>
+        <span class="topbar__sep">|</span>
+        <span class="topbar__item">✦ Qualidade Premium · Estilo Autêntico</span>
+        <span class="topbar__sep">|</span>
+        <!-- duplicado para loop contínuo -->
+        <span class="topbar__item">✦ Streetwear Premium em Ribeirão Claro — PR</span>
+        <span class="topbar__sep">|</span>
+        <span class="topbar__item">✦ Frete para todo o Brasil</span>
+        <span class="topbar__sep">|</span>
+        <span class="topbar__item">✦ Atendimento via WhatsApp: (43) 9 9601-9761</span>
+        <span class="topbar__sep">|</span>
+        <span class="topbar__item">✦ Instagram: @loja_teixeira_style</span>
+        <span class="topbar__sep">|</span>
+        <span class="topbar__item">✦ Novas peças toda semana</span>
+        <span class="topbar__sep">|</span>
+        <span class="topbar__item">✦ Qualidade Premium · Estilo Autêntico</span>
+        <span class="topbar__sep">|</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================
+       NAVBAR
+  ================================ -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar__container">
+
+      <!-- Links desktop -->
+      <ul class="navbar__menu" id="navMenu">
+        <li><a href="#inicio" class="navbar__link">Início</a></li>
+        <li><a href="#colecoes" class="navbar__link">Coleções</a></li>
+        <li><a href="#categorias" class="navbar__link">Categorias</a></li>
+        <li><a href="#contato" class="navbar__link">Contato</a></li>
+        <li>
+          <a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="navbar__link navbar__link--instagram">
+            <img src="assets/icons/instagram.svg" alt="Instagram" class="navbar__icon" />
+            @loja_teixeira_style
+          </a>
+        </li>
+      </ul>
+
+      <!-- Barra de pesquisa -->
+      <div class="navbar__search" id="navSearch">
+        <img src="assets/icons/search.svg" alt="Pesquisar" class="navbar__search-icon" />
+        <input type="text" class="navbar__search-input" placeholder="Pesquisar..." aria-label="Pesquisar" id="searchInput" />
+      </div>
+
+      <div class="navbar__actions">
+        <button class="navbar__google-btn auth-btn" data-action="login" title="Entrar / Sair">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Entrar com Google
+        </button>
+        <a href="carrinho.html" class="navbar__icon-btn cart-btn" title="Carrinho">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span class="cart-count">0</span>
+        </a>
+      </div>
+
+      <!-- Hamburger mobile -->
+      <button class="navbar__hamburger" id="hamburger" aria-label="Abrir menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+    </div>
+
+    <!-- Menu mobile overlay -->
+    <div class="navbar__mobile-menu" id="mobileMenu">
+      <ul class="navbar__mobile-list">
+        <li><a href="#inicio" class="navbar__mobile-link">Início</a></li>
+        <li><a href="#colecoes" class="navbar__mobile-link">Coleções</a></li>
+        <li><a href="#categorias" class="navbar__mobile-link">Categorias</a></li>
+        <li><a href="#contato" class="navbar__mobile-link">Contato</a></li>
+        <li><a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="navbar__mobile-link">Instagram</a></li>
+        <li>
+          <a href="https://wa.me/5543996019761" target="_blank" rel="noopener" class="btn btn--gold navbar__mobile-cta">
+            Fale no WhatsApp
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ==============================
+       HERO
+  ================================ -->
+  <section class="hero" id="inicio">
+    <div class="hero__bg" id="heroBg">
+      <div class="hero__slides">
+        <div class="hero__slide hero__slide--active">
+          <img src="assets/images/camiseta.png" alt="Camiseta Teixeira Style" class="hero__slide-img" />
+        </div>
+        <div class="hero__slide">
+          <img src="assets/images/camiseta2.png" alt="Camiseta 2 Teixeira Style" class="hero__slide-img" />
+        </div>
+      </div>
+      <div class="hero__overlay"></div>
+    </div>
+
+    <div class="hero__content reveal">
+      <img src="assets/images/imagem.png" alt="Teixeira Style" class="hero__logo-img" />
+      <div class="hero__actions">
+        <a href="catalogo.html" class="btn btn--gold btn--lg">Ver Coleção</a>
+        <a href="https://wa.me/5543996019761" target="_blank" rel="noopener" class="btn btn--outline btn--lg">
+          Falar no WhatsApp
+        </a>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ==============================
+       CATEGORIAS
+  ================================ -->
+  <section class="categories section" id="categorias">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-eyebrow">Explore</p>
+        <h2 class="section-title">Categorias</h2>
+      </div>
+
+      <div class="categories__grid">
+
+        <div class="category-card reveal" style="--delay: 0s">
+          <div class="category-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=80" alt="Streetwear" class="category-card__img" loading="lazy" />
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__name">Streetwear</h3>
+            <a href="catalogo.html" class="category-card__link">Explorar <span>→</span></a>
+          </div>
+        </div>
+
+        <div class="category-card reveal" style="--delay: 0.1s">
+          <div class="category-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&q=80" alt="Casual" class="category-card__img" loading="lazy" />
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__name">Casual</h3>
+            <a href="catalogo.html" class="category-card__link">Explorar <span>→</span></a>
+          </div>
+        </div>
+
+        <div class="category-card reveal" style="--delay: 0.2s">
+          <div class="category-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80" alt="Tênis" class="category-card__img" loading="lazy" />
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__name">Tênis</h3>
+            <a href="catalogo.html" class="category-card__link">Explorar <span>→</span></a>
+          </div>
+        </div>
+
+        <div class="category-card reveal" style="--delay: 0.3s">
+          <div class="category-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80" alt="Esportivo" class="category-card__img" loading="lazy" />
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__name">Esportivo</h3>
+            <a href="catalogo.html" class="category-card__link">Explorar <span>→</span></a>
+          </div>
+        </div>
+
+        <div class="category-card reveal" style="--delay: 0.4s">
+          <div class="category-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1476234251651-f353703a034d?w=600&q=80" alt="Infantil Masculino Streetwear" class="category-card__img" loading="lazy" />
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__name">Infantil</h3>
+            <a href="catalogo.html" class="category-card__link">Explorar <span>→</span></a>
+          </div>
+        </div>
+
+        <div class="category-card reveal" style="--delay: 0.5s">
+          <div class="category-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1617952739218-c1b0fc50b5d8?w=600&q=80" alt="Cueca" class="category-card__img" loading="lazy" />
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__name">Cueca</h3>
+            <a href="catalogo.html" class="category-card__link">Explorar <span>→</span></a>
+          </div>
+        </div>
+
+        <div class="category-card reveal" style="--delay: 0.6s">
+          <div class="category-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=600&q=80" alt="Meia" class="category-card__img" loading="lazy" />
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__name">Meia</h3>
+            <a href="catalogo.html" class="category-card__link">Explorar <span>→</span></a>
+          </div>
+        </div>
+
+        <div class="category-card reveal" style="--delay: 0.7s">
+          <div class="category-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600&q=80" alt="Boné" class="category-card__img" loading="lazy" />
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__name">Boné</h3>
+            <a href="catalogo.html" class="category-card__link">Explorar <span>→</span></a>
+          </div>
+        </div>
+
+        <div class="category-card reveal" style="--delay: 0.8s">
+          <div class="category-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80" alt="Relógios" class="category-card__img" loading="lazy" />
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__name">Relógios</h3>
+            <a href="catalogo.html" class="category-card__link">Explorar <span>→</span></a>
+          </div>
+        </div>
+
+        <div class="category-card reveal" style="--delay: 0.9s">
+          <div class="category-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1508296695146-257a814070b4?w=600&q=80" alt="Óculos" class="category-card__img" loading="lazy" />
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__name">Óculos</h3>
+            <a href="catalogo.html" class="category-card__link">Explorar <span>→</span></a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       DESTAQUES / COLEÇÕES
+  ================================ -->
+  <section class="highlights section" id="colecoes">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-eyebrow">Novidades</p>
+        <h2 class="section-title">Peças em Destaque</h2>
+      </div>
+
+      <div class="highlights__grid" id="highlightsGrid">
+
+        <article class="product-card reveal" style="--delay: 0s">
+          <div class="product-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80" alt="Camiseta Oversized" class="product-card__img" loading="lazy" />
+            <div class="product-card__badge">Novo</div>
+          </div>
+          <div class="product-card__info">
+            <span class="product-card__category">Streetwear</span>
+            <h3 class="product-card__name">Camiseta Oversized Premium</h3>
+            <a href="https://wa.me/5543960197610" target="_blank" rel="noopener" class="btn btn--outline btn--sm product-card__btn">Ver mais</a>
+          </div>
+        </article>
+
+        <article class="product-card reveal" style="--delay: 0.1s">
+          <div class="product-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80" alt="Tênis Urban" class="product-card__img" loading="lazy" />
+            <div class="product-card__badge">Destaque</div>
+          </div>
+          <div class="product-card__info">
+            <span class="product-card__category">Tênis</span>
+            <h3 class="product-card__name">Tênis Urban Classic</h3>
+            <a href="https://wa.me/5543960197610" target="_blank" rel="noopener" class="btn btn--outline btn--sm product-card__btn">Ver mais</a>
+          </div>
+        </article>
+
+        <article class="product-card reveal" style="--delay: 0.2s">
+          <div class="product-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80" alt="Conjunto Esportivo" class="product-card__img" loading="lazy" />
+          </div>
+          <div class="product-card__info">
+            <span class="product-card__category">Esportivo</span>
+            <h3 class="product-card__name">Conjunto Esportivo Street</h3>
+            <a href="https://wa.me/5543960197610" target="_blank" rel="noopener" class="btn btn--outline btn--sm product-card__btn">Ver mais</a>
+          </div>
+        </article>
+
+        <article class="product-card reveal" style="--delay: 0.3s">
+          <div class="product-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1508296695146-257a814070b4?w=600&q=80" alt="Óculos Premium" class="product-card__img" loading="lazy" />
+            <div class="product-card__badge">Hot</div>
+          </div>
+          <div class="product-card__info">
+            <span class="product-card__category">Óculos</span>
+            <h3 class="product-card__name">Óculos Retrô Premium</h3>
+            <a href="https://wa.me/5543960197610" target="_blank" rel="noopener" class="btn btn--outline btn--sm product-card__btn">Ver mais</a>
+          </div>
+        </article>
+
+        <article class="product-card reveal" style="--delay: 0.4s">
+          <div class="product-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=600&q=80" alt="Moletom Casual" class="product-card__img" loading="lazy" />
+          </div>
+          <div class="product-card__info">
+            <span class="product-card__category">Casual</span>
+            <h3 class="product-card__name">Moletom Casual Drop</h3>
+            <a href="https://wa.me/5543960197610" target="_blank" rel="noopener" class="btn btn--outline btn--sm product-card__btn">Ver mais</a>
+          </div>
+        </article>
+
+        <article class="product-card reveal" style="--delay: 0.5s">
+          <div class="product-card__img-wrap">
+            <img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600&q=80" alt="Boné Premium" class="product-card__img" loading="lazy" />
+            <div class="product-card__badge">Novo</div>
+          </div>
+          <div class="product-card__info">
+            <span class="product-card__category">Boné</span>
+            <h3 class="product-card__name">Boné Snapback Premium</h3>
+            <a href="https://wa.me/5543960197610" target="_blank" rel="noopener" class="btn btn--outline btn--sm product-card__btn">Ver mais</a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       BANNER NOVA COLEÇÃO
+  ================================ -->
+  <section class="banner" id="novidade">
+    <div class="banner__bg">
+      <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80" alt="Nova Coleção Banner" class="banner__img" loading="lazy" />
+      <div class="banner__overlay"></div>
+    </div>
+    <div class="banner__content reveal">
+      <p class="banner__eyebrow">Temporada 2025</p>
+      <h2 class="banner__title">NOVA<br />COLEÇÃO</h2>
+      <p class="banner__subtitle">Peças que definem quem você é. Estilo sem concessões.</p>
+      <a href="https://wa.me/5543960197610" target="_blank" rel="noopener" class="btn btn--gold btn--lg">
+        Conferir Agora
+      </a>
+    </div>
+  </section>
+
+  <!-- ==============================
+       DIFERENCIAIS
+  ================================ -->
+  <section class="differentials section" id="diferenciais">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-eyebrow">Por que nos escolher</p>
+        <h2 class="section-title">Nossos Diferenciais</h2>
+      </div>
+
+      <div class="differentials__grid">
+
+        <div class="diff-card reveal" style="--delay: 0s">
+          <div class="diff-card__icon">
+            <img src="assets/icons/quality.svg" alt="Qualidade Premium" />
+          </div>
+          <h3 class="diff-card__title">Qualidade Premium</h3>
+          <p class="diff-card__text">Selecionamos apenas peças com excelência em materiais e acabamento.</p>
+        </div>
+
+        <div class="diff-card reveal" style="--delay: 0.1s">
+          <div class="diff-card__icon">
+            <img src="assets/icons/service.svg" alt="Atendimento Personalizado" />
+          </div>
+          <h3 class="diff-card__title">Atendimento Personalizado</h3>
+          <p class="diff-card__text">Nossa equipe está pronta para ajudar você a encontrar o estilo perfeito.</p>
+        </div>
+
+        <div class="diff-card reveal" style="--delay: 0.2s">
+          <div class="diff-card__icon">
+            <img src="assets/icons/curated.svg" alt="Peças Selecionadas" />
+          </div>
+          <h3 class="diff-card__title">Peças Selecionadas</h3>
+          <p class="diff-card__text">Curadoria exclusiva com as tendências mais atuais do streetwear nacional e global.</p>
+        </div>
+
+        <div class="diff-card reveal" style="--delay: 0.3s">
+          <div class="diff-card__icon">
+            <img src="assets/icons/delivery.svg" alt="Entrega Rápida" />
+          </div>
+          <h3 class="diff-card__title">Entrega Rápida</h3>
+          <p class="diff-card__text">Enviamos para todo o Brasil com agilidade e segurança garantidas.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       INSTAGRAM FEED
+  ================================ -->
+  <section class="instagram section" id="instagram">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-eyebrow">Redes sociais</p>
+        <h2 class="section-title">Siga nosso Instagram</h2>
+        <p class="instagram__handle">@loja_teixeira_style</p>
+      </div>
+
+      <div class="instagram__grid">
+
+        <a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="instagram__item reveal" style="--delay: 0s">
+          <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=500&q=80" alt="Instagram Post 1" loading="lazy" />
+          <div class="instagram__item-overlay">
+            <img src="assets/icons/instagram.svg" alt="Instagram" class="instagram__item-icon" />
+          </div>
+        </a>
+
+        <a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="instagram__item reveal" style="--delay: 0.1s">
+          <img src="https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=500&q=80" alt="Instagram Post 2" loading="lazy" />
+          <div class="instagram__item-overlay">
+            <img src="assets/icons/instagram.svg" alt="Instagram" class="instagram__item-icon" />
+          </div>
+        </a>
+
+        <a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="instagram__item reveal" style="--delay: 0.2s">
+          <img src="https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=500&q=80" alt="Instagram Post 3" loading="lazy" />
+          <div class="instagram__item-overlay">
+            <img src="assets/icons/instagram.svg" alt="Instagram" class="instagram__item-icon" />
+          </div>
+        </a>
+
+        <a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="instagram__item reveal" style="--delay: 0.3s">
+          <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=500&q=80" alt="Instagram Post 4" loading="lazy" />
+          <div class="instagram__item-overlay">
+            <img src="assets/icons/instagram.svg" alt="Instagram" class="instagram__item-icon" />
+          </div>
+        </a>
+
+        <a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="instagram__item reveal" style="--delay: 0.4s">
+          <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=500&q=80" alt="Instagram Post 5" loading="lazy" />
+          <div class="instagram__item-overlay">
+            <img src="assets/icons/instagram.svg" alt="Instagram" class="instagram__item-icon" />
+          </div>
+        </a>
+
+        <a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="instagram__item reveal" style="--delay: 0.5s">
+          <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=500&q=80" alt="Instagram Post 6" loading="lazy" />
+          <div class="instagram__item-overlay">
+            <img src="assets/icons/instagram.svg" alt="Instagram" class="instagram__item-icon" />
+          </div>
+        </a>
+
+      </div>
+
+      <div class="instagram__cta reveal">
+        <a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="btn btn--gold">
+          Ver Instagram
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==============================
+       CTA WHATSAPP
+  ================================ -->
+  <section class="cta-section" id="contato">
+    <div class="cta-section__bg">
+      <img src="https://images.unsplash.com/photo-1594938298603-c8148c4b4d75?w=1920&q=80" alt="" class="cta-section__img" loading="lazy" />
+      <div class="cta-section__overlay"></div>
+    </div>
+    <div class="cta-section__content reveal">
+      <p class="section-eyebrow">Vamos conversar</p>
+      <h2 class="cta-section__title">Pronto para renovar<br />seu estilo?</h2>
+      <p class="cta-section__subtitle">Entre em contato e descubra as melhores peças para o seu look.</p>
+      <a href="https://wa.me/5543996019761" target="_blank" rel="noopener" class="btn btn--gold btn--lg cta-section__btn">
+        <img src="assets/icons/whatsapp.svg" alt="WhatsApp" class="btn__icon" />
+        Falar no WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <!-- ==============================
+       FOOTER
+  ================================ -->
+  <footer class="footer" id="footer">
+    <div class="footer__top">
+      <div class="container footer__grid">
+
+        <!-- Brand -->
+        <div class="footer__brand">
+          <p class="footer__tagline">Moda Streetwear Premium.<br />Estilo que define quem você é.</p>
+          <a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="footer__social">
+            <img src="assets/icons/instagram.svg" alt="Instagram" />
+            @loja_teixeira_style
+          </a>
+        </div>
+
+        <!-- Links rápidos -->
+        <div class="footer__links">
+          <h4 class="footer__heading">Links Rápidos</h4>
+          <ul class="footer__list">
+            <li><a href="#inicio" class="footer__link">Início</a></li>
+            <li><a href="#colecoes" class="footer__link">Coleções</a></li>
+            <li><a href="#categorias" class="footer__link">Categorias</a></li>
+            <li><a href="#instagram" class="footer__link">Instagram</a></li>
+          </ul>
+        </div>
+
+        <!-- Contato -->
+        <div class="footer__contact">
+          <h4 class="footer__heading">Contato</h4>
+          <ul class="footer__list">
+            <li class="footer__contact-item">
+              <img src="assets/icons/map.svg" alt="Endereço" class="footer__contact-icon" />
+              <span>R. Cel. Joaquim Ribeiro Gomes, 20<br />Ribeirão Claro — PR, 86410-000</span>
+            </li>
+            <li class="footer__contact-item">
+              <img src="assets/icons/phone.svg" alt="Telefone" class="footer__contact-icon" />
+              <a href="https://wa.me/5543996019761" target="_blank" rel="noopener" class="footer__link">(43) 9 9601-9761</a>
+            </li>
+            <li class="footer__contact-item">
+              <img src="assets/icons/instagram.svg" alt="Instagram" class="footer__contact-icon" />
+              <a href="https://instagram.com/loja_teixeira_style" target="_blank" rel="noopener" class="footer__link">@loja_teixeira_style</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Mapa placeholder -->
+        <div class="footer__map">
+          <h4 class="footer__heading">Localização</h4>
+          <div class="footer__map-placeholder">
+            <img src="assets/icons/map.svg" alt="Mapa" class="footer__map-icon" />
+            <span>Ribeirão Claro — PR</span>
+            <a href="https://www.google.com/maps/search/?api=1&query=R.+Cel.+Joaquim+Ribeiro+Gomes,+20,+Ribeirao+Claro,+PR,+86410-000" target="_blank" rel="noopener" class="footer__map-link">Ver no Google Maps</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <div class="container footer__bottom-inner">
+        <p class="footer__copy">
+          © 2025 Teixeira Style. Todos os direitos reservados.
+        </p>
+        <p class="footer__credits">
+          Feito com <span class="gold">♥</span> em Ribeirão Claro — PR
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==============================
+       BACK TO TOP
+  ================================ -->
+  <button class="back-to-top" id="backToTop" aria-label="Voltar ao topo">
+    <img src="assets/icons/arrow-up.svg" alt="Topo" />
+  </button>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/auth.js"></script>
+  <!-- Script principal -->
+  <script src="js/script.js"></script>
+</body>
+</html>
