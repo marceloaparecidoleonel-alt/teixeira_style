@@ -1577,23 +1577,6 @@ document.getElementById('settingsAppearanceBtn')?.addEventListener('click', asyn
   }
 });
 
-/* Redefinição de senha — envia link para o e-mail do admin */
-document.getElementById('settingsPwdBtn')?.addEventListener('click', async () => {
-  const user = auth.currentUser;
-  if (!user?.email) { showToast('Nenhum usuário autenticado.', 'error'); return; }
-
-  const btn = document.getElementById('settingsPwdBtn');
-  if (btn) btn.textContent = 'Enviando…';
-  try {
-    await auth.sendPasswordResetEmail(user.email);
-    showToast('Link enviado para ' + user.email + '. Verifique sua caixa de entrada.');
-  } catch (err) {
-    showToast('Erro ao enviar: ' + (err.message || 'tente novamente.'), 'error');
-    console.error('settingsPwdBtn error:', err);
-  } finally {
-    if (btn) btn.textContent = 'Enviar link de redefinição';
-  }
-});
 
 /* ============================================================
    BUSCA GLOBAL — topbar
