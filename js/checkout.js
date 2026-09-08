@@ -120,6 +120,27 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
       color: 'green',
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(() => {});
+
+    /* Notificação WhatsApp para o dono — se ativada nas configurações */
+    try {
+      const cfgSnap = await db.collection('store_settings').doc('main').get();
+      const cfg = cfgSnap.exists ? cfgSnap.data() : {};
+      if (cfg.notifyWhatsapp && cfg.whatsapp) {
+        const ownerNum = String(cfg.whatsapp).replace(/\D/g, '');
+        const itensNot = cart.map(i => `• ${i.qty}x ${i.name} (${i.size}) - R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')}`).join('\n');
+        const notifMsg = encodeURIComponent(
+          `🛍️ *Novo pedido #${docRef.id.slice(-6)}* recebido no site!\n\n` +
+          `👤 Cliente: ${order.full_name}\n` +
+          `📱 WhatsApp: ${order.whatsapp}\n` +
+          `📍 Cidade: ${order.city}\n\n` +
+          `🛒 Itens:\n${itensNot}\n\n` +
+          `💰 Total: R$ ${total.toFixed(2).replace('.', ',')}\n` +
+          `💳 Pagamento: ${payment === 'whatsapp' ? 'WhatsApp' : payment}`
+        );
+        window.open(`https://wa.me/${ownerNum}?text=${notifMsg}`, '_blank');
+      }
+    } catch(e) { /* não bloqueia o fluxo se falhar */ }
+
     clearCart();
 
     if (payment === 'mercadopago') {

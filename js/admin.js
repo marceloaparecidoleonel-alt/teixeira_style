@@ -1471,9 +1471,10 @@ const SETTINGS_DEFAULTS = {
   address:       'R. Cel. Joaquim Ribeiro Gomes, 20 — Ribeirão Claro/PR',
   accentColor:   '#C9A66B',
   topbarText:    'Atendimento via WhatsApp · Ribeirão Claro — PR · @loja_teixeira_style',
-  topbarActive:  true,
-  topbarSpeed:   30,
-  maintenance:   false
+  topbarActive:     true,
+  topbarSpeed:       30,
+  maintenance:       false,
+  notifyWhatsapp:    false
 };
 
 /* Carrega as configurações do Firestore e preenche os campos */
@@ -1502,6 +1503,7 @@ async function loadSettings() {
     set('settingsTopbar',    data.topbarText);
     setChk('settingsTopbarActive', data.topbarActive);
     setChk('settingsMaintenance',  data.maintenance);
+    setChk('settingsNotifyWhatsapp', data.notifyWhatsapp);
     const speedEl = document.getElementById('settingsTopbarSpeed');
     if (speedEl) speedEl.value = data.topbarSpeed ?? 30;
 
@@ -1526,7 +1528,8 @@ document.getElementById('settingsInfoBtn')?.addEventListener('click', async () =
   const btn = document.getElementById('settingsInfoBtn');
   if (btn) btn.textContent = 'Salvando…';
   try {
-    await SETTINGS_DOC().set({ whatsapp: wa, instagram: ig, address: adr }, { merge: true });
+    const notifyWa = !!(document.getElementById('settingsNotifyWhatsapp')?.checked);
+    await SETTINGS_DOC().set({ whatsapp: wa, instagram: ig, address: adr, notifyWhatsapp: notifyWa }, { merge: true });
     showToast('Informações da loja salvas!');
   } catch (err) {
     showToast('Erro ao salvar: ' + (err.message || 'tente novamente.'), 'error');
