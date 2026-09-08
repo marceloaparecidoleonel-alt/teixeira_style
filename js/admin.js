@@ -117,21 +117,7 @@ function _showLoginScreen(msg) {
   }
 }
 
-/* Gate: segura onAuthStateChanged até getRedirectResult resolver */
-const _isAdminProd = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
-let _adminRedirectReady = Promise.resolve();
-if (_isAdminProd) {
-  _adminRedirectReady = auth.getRedirectResult().then(function(result) {
-    if (result && result.user) console.log('[Admin] Redirect login ok:', result.user.email);
-  }).catch(function(err) {
-    if (err && err.code !== 'auth/popup-closed-by-user') {
-      console.error('Admin redirect result error:', err.code, err.message);
-    }
-  });
-}
-
 auth.onAuthStateChanged(async user => {
-  await _adminRedirectReady;
   if (user) {
     if (isAdminEmail(user.email)) {
       _showAdminPanel(user);
@@ -158,11 +144,7 @@ document.getElementById('adminGoogleBtn')?.addEventListener('click', async () =>
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    if (_isAdminProd) {
-      await auth.signInWithRedirect(provider);
-    } else {
-      await auth.signInWithPopup(provider);
-    }
+    await auth.signInWithPopup(provider);
   } catch (err) {
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
       console.error('Admin login error:', err.code, err.message);

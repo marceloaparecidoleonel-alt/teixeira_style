@@ -78,31 +78,7 @@ function updateAuthUI() {
 }
 
 /* ---- Login com Google ---- */
-const _isProd = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 let _loginInProgress = false;
-
-/* Garante que auth-loading não esconde o botão para sempre — timeout de segurança */
-setTimeout(function() {
-  document.body.classList.remove('auth-loading');
-}, 3000);
-
-/* Em produção: processa resultado de redirect assim que a página volta do Google */
-let _redirectReady = Promise.resolve();
-if (_isProd) {
-  _redirectReady = auth.getRedirectResult().then(function(result) {
-    if (result && result.user) {
-      /* Usuário veio de redirect — atualiza estado manualmente e renderiza UI */
-      window.currentUser = result.user;
-      window.__authReady = true;
-      updateAuthUI();
-      console.log('[Auth] Redirect login ok:', result.user.email);
-    }
-  }).catch(function(err) {
-    if (err && err.code !== 'auth/popup-closed-by-user') {
-      console.error('getRedirectResult error:', err.code, err.message);
-    }
-  });
-}
 
 async function signInWithGoogle() {
   if (_loginInProgress) return;
@@ -110,16 +86,12 @@ async function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   try {
-    if (_isProd) {
-      await auth.signInWithRedirect(provider);
-    } else {
-      await auth.signInWithPopup(provider);
-      _loginInProgress = false;
-    }
+    await auth.signInWithPopup(provider);
   } catch (err) {
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
       console.error('Login error:', err.code, err.message);
     }
+  } finally {
     _loginInProgress = false;
   }
 }
