@@ -133,8 +133,16 @@ auth.onAuthStateChanged(user => {
   }
 });
 
+/* Captura resultado do redirect (produção) assim que a página carrega */
+auth.getRedirectResult().catch(function(err) {
+  if (err && err.code !== 'auth/popup-closed-by-user') {
+    console.error('Redirect result error:', err.code, err.message);
+  }
+});
+
 /* Botão de login com Google na tela de login do admin */
 let _adminLoginInProgress = false;
+const _isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 document.getElementById('adminGoogleBtn')?.addEventListener('click', async () => {
   if (_adminLoginInProgress) return;
   _adminLoginInProgress = true;
@@ -143,8 +151,12 @@ document.getElementById('adminGoogleBtn')?.addEventListener('click', async () =>
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    await auth.signInWithPopup(provider);
-    /* O onAuthStateChanged acima cuida do resto */
+    if (_isLocalhost) {
+      await auth.signInWithPopup(provider);
+    } else {
+      await auth.signInWithRedirect(provider);
+      return; /* onAuthStateChanged cuida do resto após redirect */
+    }
   } catch (err) {
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
       console.error('Admin login error:', err.code, err.message);

@@ -75,18 +75,30 @@ function updateAuthUI() {
   document.body.classList.remove('auth-loading');
 }
 
-/* ---- Login com Google (popup) ---- */
+/* ---- Login com Google ---- */
+const _isLocalhostAuth = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 let _loginInProgress = false;
+
+/* Captura resultado do redirect (produção) assim que a página carrega */
+auth.getRedirectResult().catch(function(err) {
+  if (err && err.code !== 'auth/popup-closed-by-user') {
+    console.error('Auth redirect result error:', err.code, err.message);
+  }
+});
 
 async function signInWithGoogle() {
   if (_loginInProgress) return;
   _loginInProgress = true;
   const provider = new firebase.auth.GoogleAuthProvider();
-  /* Força a tela de escolha de conta do Google a aparecer sempre.
-     Isso garante que trocar de conta (A → B) funcione corretamente. */
+  /* Força a tela de escolha de conta do Google a aparecer sempre. */
   provider.setCustomParameters({ prompt: 'select_account' });
   try {
-    await auth.signInWithPopup(provider);
+    if (_isLocalhostAuth) {
+      await auth.signInWithPopup(provider);
+    } else {
+      await auth.signInWithRedirect(provider);
+      return; /* onAuthStateChanged cuida do restante após o redirect */
+    }
   } catch (err) {
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
       console.error('Login error:', err.code, err.message);
