@@ -500,36 +500,100 @@ async function loadHeroSlides() {
    12. BARRA DE PESQUISA — navbar
    ============================================================ */
 function initSearch() {
-  const toggle   = document.getElementById('searchToggle');
-  const box      = document.getElementById('searchBox');
-  const closeBtn = document.getElementById('searchClose');
-  const input    = document.getElementById('searchInput');
+  const input   = document.getElementById('searchInput');
+  const wrapper = document.getElementById('navSearch');
+  if (!input || !wrapper) return;
 
-  if (!toggle || !box) return;
+  /* Cria dropdown */
+  const dropdown = document.createElement('div');
+  dropdown.id = 'searchDropdown';
+  dropdown.style.cssText = [
+    'position:absolute','top:calc(100% + 6px)','left:0','right:0',
+    'background:#1a1a22','border:1px solid rgba(255,255,255,0.1)',
+    'border-radius:4px','z-index:9999','max-height:320px',
+    'overflow-y:auto','display:none','box-shadow:0 8px 24px rgba(0,0,0,0.5)'
+  ].join(';');
+  wrapper.style.position = 'relative';
+  wrapper.appendChild(dropdown);
 
-  function openSearch() {
-    box.classList.add('open');
-    if (input) input.focus();
+  let _debounce = null;
+  let _lastQ = '';
+
+  function showDropdown(items, query) {
+    dropdown.innerHTML = '';
+    if (!items.length) {
+      dropdown.innerHTML = `<div style="padding:0.85rem 1rem;font-size:0.78rem;color:rgba(255,255,255,0.4)">Nenhum produto encontrado</div>`;
+    } else {
+      items.slice(0, 6).forEach(p => {
+        const el = document.createElement('a');
+        el.href = `produto.html?id=${p.id}`;
+        el.style.cssText = 'display:flex;align-items:center;gap:0.75rem;padding:0.65rem 1rem;text-decoration:none;transition:background 0.15s;cursor:pointer';
+        el.onmouseenter = () => el.style.background = 'rgba(255,255,255,0.06)';
+        el.onmouseleave = () => el.style.background = '';
+        const img = p.images?.[0] || p.image || '';
+        el.innerHTML = `
+          ${img ? `<img src="${img}" style="width:36px;height:36px;object-fit:cover;border-radius:2px;flex-shrink:0" />` : `<div style="width:36px;height:36px;background:rgba(255,255,255,0.06);border-radius:2px;flex-shrink:0"></div>`}
+          <div style="min-width:0">
+            <div style="font-size:0.8rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name || p.nome || ''}</div>
+            <div style="font-size:0.72rem;color:rgba(201,166,107,0.9);margin-top:2px">R$ ${Number(p.price || p.preco || 0).toFixed(2).replace('.',',')}</div>
+          </div>`;
+        dropdown.appendChild(el);
+      });
+      if (items.length > 6) {
+        const more = document.createElement('a');
+        more.href = `catalogo.html?search=${encodeURIComponent(query)}`;
+        more.style.cssText = 'display:block;padding:0.65rem 1rem;font-size:0.75rem;color:rgba(201,166,107,0.8);text-align:center;text-decoration:none;border-top:1px solid rgba(255,255,255,0.07)';
+        more.textContent = `Ver todos os ${items.length} resultados →`;
+        dropdown.appendChild(more);
+      }
+    }
+    dropdown.style.display = 'block';
   }
 
-  function closeSearch() {
-    box.classList.remove('open');
-    if (input) input.value = '';
+  function hideDropdown() {
+    dropdown.style.display = 'none';
   }
 
-  toggle.addEventListener('click', () => {
-    box.classList.contains('open') ? closeSearch() : openSearch();
+  async function doSearch(q) {
+    q = q.trim().toLowerCase();
+    if (!q) { hideDropdown(); return; }
+    if (q === _lastQ) return;
+    _lastQ = q;
+    try {
+      const snap = await window.fbDb.collection('products').get();
+      const results = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        const name = (d.name || d.nome || '').toLowerCase();
+        const desc = (d.description || d.descricao || '').toLowerCase();
+        const cat  = (d.category || d.categoria || '').toLowerCase();
+        if (name.includes(q) || desc.includes(q) || cat.includes(q)) {
+          results.push({ id: doc.id, ...d });
+        }
+      });
+      showDropdown(results, q);
+    } catch(e) {
+      console.error('Search error:', e);
+    }
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(_debounce);
+    const q = input.value.trim();
+    if (!q) { hideDropdown(); _lastQ = ''; return; }
+    _debounce = setTimeout(() => doSearch(q), 300);
   });
 
-  if (closeBtn) closeBtn.addEventListener('click', closeSearch);
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeSearch();
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const q = input.value.trim();
+      if (q) window.location.href = `catalogo.html?search=${encodeURIComponent(q)}`;
+    }
+    if (e.key === 'Escape') { hideDropdown(); input.blur(); }
   });
 
-  /* Fecha ao clicar fora */
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('#navSearch')) closeSearch();
+    if (!wrapper.contains(e.target)) { hideDropdown(); }
   });
 }
 

@@ -281,4 +281,13 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 /* ---- INIT ---- */
-loadCategoryFilters().then(loadProducts);
+loadCategoryFilters().then(loadProducts).then(() => {
+  /* Lê parâmetro ?search= da URL e pré-preenche a busca */
+  const urlSearch = new URLSearchParams(window.location.search).get('search');
+  if (urlSearch && searchInput) {
+    searchInput.value = urlSearch;
+    currentSearch = urlSearch.toLowerCase().trim();
+    renderProducts();
+    searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
