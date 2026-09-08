@@ -134,7 +134,18 @@ auth.onAuthStateChanged(user => {
 });
 
 /* Botão de login com Google na tela de login do admin */
+const _isAdminProd = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 let _adminLoginInProgress = false;
+
+/* Em produção, captura resultado de redirect ao carregar a página */
+if (_isAdminProd) {
+  auth.getRedirectResult().catch(function(err) {
+    if (err && err.code !== 'auth/popup-closed-by-user') {
+      console.error('Admin redirect result error:', err.code, err.message);
+    }
+  });
+}
+
 document.getElementById('adminGoogleBtn')?.addEventListener('click', async () => {
   if (_adminLoginInProgress) return;
   _adminLoginInProgress = true;
@@ -143,7 +154,11 @@ document.getElementById('adminGoogleBtn')?.addEventListener('click', async () =>
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    await auth.signInWithPopup(provider);
+    if (_isAdminProd) {
+      await auth.signInWithRedirect(provider);
+    } else {
+      await auth.signInWithPopup(provider);
+    }
   } catch (err) {
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
       console.error('Admin login error:', err.code, err.message);

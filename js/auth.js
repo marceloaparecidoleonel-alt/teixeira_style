@@ -78,21 +78,36 @@ function updateAuthUI() {
 }
 
 /* ---- Login com Google ---- */
+const _isProd = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 let _loginInProgress = false;
+
+/* Em produção, processa resultado de redirect ao carregar a página */
+if (_isProd) {
+  auth.getRedirectResult().then(function(result) {
+    /* onAuthStateChanged já cuida do usuário — nada extra necessário */
+  }).catch(function(err) {
+    if (err && err.code !== 'auth/popup-closed-by-user') {
+      console.error('getRedirectResult error:', err.code, err.message);
+    }
+  });
+}
 
 async function signInWithGoogle() {
   if (_loginInProgress) return;
   _loginInProgress = true;
   const provider = new firebase.auth.GoogleAuthProvider();
-  /* Força a tela de escolha de conta do Google a aparecer sempre. */
   provider.setCustomParameters({ prompt: 'select_account' });
   try {
-    await auth.signInWithPopup(provider);
+    if (_isProd) {
+      /* Redirect é o único método 100% confiável fora do authDomain */
+      await auth.signInWithRedirect(provider);
+    } else {
+      await auth.signInWithPopup(provider);
+    }
   } catch (err) {
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
       console.error('Login error:', err.code, err.message);
     }
-  } finally {
     _loginInProgress = false;
   }
 }
