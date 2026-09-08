@@ -35,9 +35,11 @@ function updateAuthUI() {
   const user = window.currentUser;
   document.querySelectorAll('.auth-btn').forEach(el => {
     if (user) {
+      const initial = (user.displayName || user.email || '?')[0].toUpperCase();
+      const initialsHtml = `<span class="auth-btn__avatar auth-btn__avatar--initials">${initial}</span>`;
       const photo = user.photoURL
-        ? `<img src="${user.photoURL}" class="auth-btn__avatar" alt="" referrerpolicy="no-referrer" />`
-        : `<span class="auth-btn__avatar auth-btn__avatar--initials">${(user.displayName || user.email || '?')[0].toUpperCase()}</span>`;
+        ? `<img src="${user.photoURL}" class="auth-btn__avatar" alt="" referrerpolicy="no-referrer" onerror="this.outerHTML='${initialsHtml.replace(/'/g, "&#39;")}';" />`
+        : initialsHtml;
       const name = user.displayName ? user.displayName.split(' ')[0] : '';
       el.innerHTML = `${photo}${name ? `<span class="auth-btn__name">${name}</span>` : ''}<span class="auth-btn__sair">Sair</span>`;
       el.dataset.action = 'logout';
