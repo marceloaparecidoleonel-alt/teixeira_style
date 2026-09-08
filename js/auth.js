@@ -26,6 +26,15 @@ window.__authReady = false;
 /* Oculta o botão imediatamente enquanto a sessão é verificada */
 if (document.body) document.body.classList.add('auth-loading');
 
+/* Fallback para foto de perfil que falha ao carregar */
+window.__avatarFallback = function(img) {
+  var initial = img.getAttribute('data-initial') || '?';
+  var span = document.createElement('span');
+  span.className = 'auth-btn__avatar auth-btn__avatar--initials';
+  span.textContent = initial;
+  img.parentNode.replaceChild(span, img);
+};
+
 /* ---- UI do botão de login/logout ---- */
 function updateAuthUI() {
   /* Não altera o botão enquanto o Firebase ainda verifica a sessão inicial.
@@ -36,10 +45,9 @@ function updateAuthUI() {
   document.querySelectorAll('.auth-btn').forEach(el => {
     if (user) {
       const initial = (user.displayName || user.email || '?')[0].toUpperCase();
-      const initialsHtml = `<span class="auth-btn__avatar auth-btn__avatar--initials">${initial}</span>`;
       const photo = user.photoURL
-        ? `<img src="${user.photoURL}" class="auth-btn__avatar" alt="" referrerpolicy="no-referrer" onerror="this.outerHTML='${initialsHtml.replace(/'/g, "&#39;")}';" />`
-        : initialsHtml;
+        ? `<img src="${user.photoURL}" class="auth-btn__avatar" alt="" referrerpolicy="no-referrer" data-initial="${initial}" onerror="window.__avatarFallback(this)" />`
+        : `<span class="auth-btn__avatar auth-btn__avatar--initials">${initial}</span>`;
       const name = user.displayName ? user.displayName.split(' ')[0] : '';
       el.innerHTML = `${photo}${name ? `<span class="auth-btn__name">${name}</span>` : ''}<span class="auth-btn__sair">Sair</span>`;
       el.dataset.action = 'logout';
