@@ -9,7 +9,7 @@
 
 const firebaseConfig = {
   apiKey:            "AIzaSyA_t97V-U1y7p005CxiiAIykWN4njUO8PM",
-  authDomain:        "teixeira-style.firebaseapp.com",
+  authDomain:        "teixeira-style.vercel.app",
   projectId:         "teixeira-style",
   storageBucket:     "teixeira-style.firebasestorage.app",
   messagingSenderId: "83677282408",
