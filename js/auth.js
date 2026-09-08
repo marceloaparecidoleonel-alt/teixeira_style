@@ -81,10 +81,14 @@ function updateAuthUI() {
 const _isProd = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 let _loginInProgress = false;
 
-/* Em produção, processa resultado de redirect ao carregar a página */
+/* Gate: segura o onAuthStateChanged até getRedirectResult resolver em produção.
+   Sem isso, onAuthStateChanged dispara user=null antes do redirect ser commitado. */
+let _redirectReady = Promise.resolve();
 if (_isProd) {
-  auth.getRedirectResult().then(function(result) {
-    /* onAuthStateChanged já cuida do usuário — nada extra necessário */
+  _redirectReady = auth.getRedirectResult().then(function(result) {
+    if (result && result.user) {
+      console.log('[Auth] Redirect login ok:', result.user.email);
+    }
   }).catch(function(err) {
     if (err && err.code !== 'auth/popup-closed-by-user') {
       console.error('getRedirectResult error:', err.code, err.message);
@@ -168,6 +172,8 @@ async function executePendingCartAction() {
 
 /* ---- Listener de estado de autenticação ---- */
 auth.onAuthStateChanged(async user => {
+  /* Aguarda getRedirectResult resolver antes de processar o estado */
+  await _redirectReady;
   const previousUser = window.currentUser;
   window.currentUser = user;
   window.__authReady = true;

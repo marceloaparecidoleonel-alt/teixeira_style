@@ -117,7 +117,21 @@ function _showLoginScreen(msg) {
   }
 }
 
-auth.onAuthStateChanged(user => {
+/* Gate: segura onAuthStateChanged até getRedirectResult resolver */
+const _isAdminProd = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
+let _adminRedirectReady = Promise.resolve();
+if (_isAdminProd) {
+  _adminRedirectReady = auth.getRedirectResult().then(function(result) {
+    if (result && result.user) console.log('[Admin] Redirect login ok:', result.user.email);
+  }).catch(function(err) {
+    if (err && err.code !== 'auth/popup-closed-by-user') {
+      console.error('Admin redirect result error:', err.code, err.message);
+    }
+  });
+}
+
+auth.onAuthStateChanged(async user => {
+  await _adminRedirectReady;
   if (user) {
     if (isAdminEmail(user.email)) {
       _showAdminPanel(user);
@@ -134,17 +148,7 @@ auth.onAuthStateChanged(user => {
 });
 
 /* Botão de login com Google na tela de login do admin */
-const _isAdminProd = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 let _adminLoginInProgress = false;
-
-/* Em produção, captura resultado de redirect ao carregar a página */
-if (_isAdminProd) {
-  auth.getRedirectResult().catch(function(err) {
-    if (err && err.code !== 'auth/popup-closed-by-user') {
-      console.error('Admin redirect result error:', err.code, err.message);
-    }
-  });
-}
 
 document.getElementById('adminGoogleBtn')?.addEventListener('click', async () => {
   if (_adminLoginInProgress) return;
