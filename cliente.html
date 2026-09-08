@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minha Conta — Teixeira Style</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Teko:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/catalogo.css" />
+  <link rel="stylesheet" href="css/cart.css" />
+  <link rel="stylesheet" href="css/cliente.css" />
+  <style>
+    .page-cliente .navbar { top: 36px; }
+    .page-cliente .navbar__logo { transform: scale(2.0); transform-origin: center; }
+    .page-cliente .navbar__panel-link { display: none !important; }
+    .page-cliente .auth-btn__avatar,
+    .page-cliente .auth-btn__name { cursor: pointer; }
+    /* Corrige sobreposição do bloco auth na navbar */
+    .page-cliente .navbar__actions { gap: 0.5rem; align-items: center; flex-wrap: nowrap; }
+    .page-cliente .auth-btn { width: auto !important; height: auto !important; display: inline-flex !important; align-items: center; gap: 0.4rem; padding: 0.3rem 0.5rem; white-space: nowrap; max-width: 200px; overflow: visible; }
+    .page-cliente .auth-btn .auth-btn__avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .page-cliente .auth-btn .auth-btn__name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; }
+    .page-cliente .auth-btn .auth-btn__sair { flex-shrink: 0; }
+    .page-cliente .navbar__panel-link { font-size: 0.72rem; padding: 0.3rem 0.5rem; flex-shrink: 0; }
+    .page-cliente .auth-name { display: none; }
+  </style>
+</head>
+<body class="page-cliente">
+
+  <!-- TOPBAR ANIMADA -->
+  <div class="topbar" id="topbar">
+    <div class="topbar__track">
+      <div class="topbar__marquee">
+        <span>✦ STREETWEAR PREMIUM EM RIBEIRÃO CLARO — PR</span>
+        <span>✦ ATENDIMENTO VIA WHATSAPP: (43) 9601-9761</span>
+        <span>✦ INSTAGRAM: @LOJA_TEIXEIRA_STYLE</span>
+        <span>✦ NOVAS PEÇAS TODA SEMANA</span>
+        <span>✦ QUALIDADE PREMIUM - ESTILO AUTÊNTICO</span>
+        <span>✦ STREETWEAR PREMIUM EM RIBEIRÃO CLARO — PR</span>
+        <span>✦ ATENDIMENTO VIA WHATSAPP: (43) 9601-9761</span>
+        <span>✦ INSTAGRAM: @LOJA_TEIXEIRA_STYLE</span>
+        <span>✦ NOVAS PEÇAS TODA SEMANA</span>
+        <span>✦ QUALIDADE PREMIUM - ESTILO AUTÊNTICO</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar__container">
+      <a href="index.html" class="navbar__back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Início
+      </a>
+      <a href="index.html" class="navbar__brand">
+        <img src="assets/images/imagem.png" alt="Teixeira Style" class="navbar__logo" />
+      </a>
+      <div class="navbar__actions">
+        <button class="navbar__icon-btn auth-btn" data-action="login" title="Entrar / Sair">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+        <span class="auth-name navbar__user-name"></span>
+        <a href="carrinho.html" class="navbar__icon-btn cart-btn" title="Carrinho">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span class="cart-count">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAINEL DO CLIENTE -->
+  <main class="cliente-main" id="clienteMain">
+    <div class="cliente-loading" id="clienteLoading">
+      <div class="cliente-loading__spinner"></div>
+      <p>Carregando...</p>
+    </div>
+
+    <div class="cliente-content hidden" id="clienteContent">
+      <section class="cliente-hero">
+        <div class="cliente-avatar">
+          <img id="clienteFoto" src="assets/images/imagem.png" alt="Foto do cliente" />
+        </div>
+        <div class="cliente-info">
+          <h1 id="clienteNome">Cliente</h1>
+          <p id="clienteEmail"></p>
+        </div>
+      </section>
+
+      <section class="cliente-pedidos">
+        <h2>Meus Pedidos</h2>
+        <p class="cliente-empty">Você ainda não possui pedidos.</p>
+      </section>
+
+      <section class="cliente-actions">
+        <a href="catalogo.html" class="cliente-btn">Continuar comprando</a>
+        <button class="cliente-btn cliente-btn--outline" data-action="logout">Sair da conta</button>
+      </section>
+    </div>
+  </main>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/settings-loader.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cliente.js"></script>
+  <script>
+    /* Painel: clique no avatar ou nome → trocar de conta; Sair → logout normal */
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('.auth-btn__avatar') || e.target.closest('.auth-btn__name')) {
+        e.stopImmediatePropagation();
+        if (window.signInWithGoogle) window.signInWithGoogle();
+      }
+    }, true);
+  </script>
+</body>
+</html>

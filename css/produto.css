@@ -28,6 +28,19 @@
 }
 .produto-page.hidden { display: none; }
 
+/* ---- Ajustes visuais exclusivos da página de produto ---- */
+
+/* Esconde o botão de login, painel e o nome do usuário na navbar da página de produto */
+.page-produto .navbar__actions .auth-btn,
+.page-produto .navbar__actions .auth-name,
+.page-produto .navbar__actions .navbar__panel-link { display: none; }
+
+/* Rodapé mais fino somente na página de produto */
+.page-produto .cat-footer { padding: 0.75rem 2rem; }
+
+/* Aumenta a logo sem alterar a altura da navbar (70px definida em catalogo.css) */
+.page-produto .navbar__logo { height: 68px; width: auto; transform: scale(2.4); transform-origin: center; }
+
 /* Breadcrumb */
 .produto-breadcrumb {
   display: flex;

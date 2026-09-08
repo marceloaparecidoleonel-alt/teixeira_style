@@ -9,8 +9,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Teko:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/catalogo.css" />
   <link rel="stylesheet" href="css/cart.css" />
+  <style>
+    /* ---- Checkout: rodapé mais fino ---- */
+    .page-checkout .cat-footer { padding: 0.75rem 2rem; }
+
+    /* ---- Checkout: logo maior, navbar mesma altura ---- */
+    .page-checkout .navbar__logo { transform: scale(2.0); transform-origin: center; }
+
+    /* ---- Checkout: corrige sobreposição do bloco auth ---- */
+    .page-checkout .navbar__actions { gap: 0.5rem; align-items: center; flex-wrap: nowrap; }
+    /* Sobrescreve width/height fixos do .navbar__icon-btn para o botão de auth */
+    .page-checkout .auth-btn { width: auto !important; height: auto !important; display: inline-flex !important; align-items: center; gap: 0.4rem; background: transparent; border: none; color: rgba(255,255,255,0.85); cursor: pointer; font-family: inherit; font-size: 0.78rem; padding: 0.3rem 0.5rem; white-space: nowrap; max-width: 200px; overflow: visible; }
+    .page-checkout .auth-btn .auth-btn__avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .page-checkout .auth-btn .auth-btn__avatar--initials { display: inline-flex; align-items: center; justify-content: center; background: #C9A66B; color: #000; font-size: 0.7rem; font-weight: 700; }
+    .page-checkout .auth-btn .auth-btn__name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; }
+    .page-checkout .auth-btn .auth-btn__sair { color: rgba(255,255,255,0.5); font-size: 0.7rem; flex-shrink: 0; }
+    .page-checkout .navbar__panel-link { font-size: 0.72rem; padding: 0.3rem 0.5rem; flex-shrink: 0; }
+    .page-checkout .auth-name { display: none; }
+  </style>
 </head>
-<body>
+<body class="page-checkout">
 
   <!-- NAVBAR -->
   <nav class="navbar" id="navbar">
@@ -98,7 +116,6 @@
 
   <footer class="cat-footer">
     <div class="cat-footer__inner">
-      <img src="assets/images/imagem.png" alt="Teixeira Style" class="cat-footer__logo" />
       <p>R. Cel. Joaquim Ribeiro Gomes, 20 · Ribeirão Claro — PR, 86410-000 · (43) 9 9601-9761 · @loja_teixeira_style</p>
     </div>
   </footer>
@@ -107,6 +124,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/auth.js"></script>

@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------
+    // Configurações da loja — leitura pública, escrita somente autenticado
+    // -------------------------------------------------------
+    match /store_settings/{doc} {
+      allow read:  if true;
+      allow write: if request.auth != null;
+    }
+
+    // -------------------------------------------------------
+    // Galeria — leitura pública, escrita somente autenticado
+    // -------------------------------------------------------
+    match /gallery/{doc} {
+      allow read:  if true;
+      allow write: if request.auth != null;
+    }
+
+    // -------------------------------------------------------
+    // Slides da Home — leitura pública, escrita somente autenticado
+    // -------------------------------------------------------
+    match /home_slides/{doc} {
+      allow read:  if true;
+      allow write: if request.auth != null;
+    }
+
+    // -------------------------------------------------------
+    // Produtos — leitura pública, escrita somente autenticado
+    // -------------------------------------------------------
+    match /products/{doc} {
+      allow read:  if true;
+      allow write: if request.auth != null;
+    }
+
+    // -------------------------------------------------------
+    // Categorias — leitura pública, escrita somente autenticado
+    // -------------------------------------------------------
+    match /categories/{doc} {
+      allow read:  if true;
+      allow write: if request.auth != null;
+    }
+
+    // -------------------------------------------------------
+    // Clientes — somente autenticado
+    // -------------------------------------------------------
+    match /clients/{doc} {
+      allow read, write: if request.auth != null;
+    }
+
+    // -------------------------------------------------------
+    // Pedidos — somente autenticado
+    // -------------------------------------------------------
+    match /orders/{doc} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

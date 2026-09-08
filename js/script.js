@@ -379,20 +379,121 @@ function initCardTilt() {
 /* ============================================================
    11. HERO SLIDESHOW
    ============================================================ */
+
+let _heroSlideshowTimer = null;
+let _heroCurrentSlide   = 0;
+let _heroSlidesLoaded   = false; /* evita chamadas duplas simultâneas */
+
 function initHeroSlideshow() {
-  const slides = document.querySelectorAll('.hero__slide');
-  if (slides.length < 2) return;
+  if (_heroSlideshowTimer) return; /* já existe um timer — não duplicar */
 
-  let current = 0;
-  const interval = 5000; /* 5 segundos por slide */
+  const slides = document.querySelectorAll('#heroSlides .hero__slide');
+  if (slides.length === 0) return; /* sem slides ainda — loadHeroSlides() chama depois */
 
-  function nextSlide() {
-    slides[current].classList.remove('hero__slide--active');
-    current = (current + 1) % slides.length;
-    slides[current].classList.add('hero__slide--active');
+  /* Ativa o primeiro slide */
+  slides.forEach((s, i) => s.classList.toggle('hero__slide--active', i === 0));
+  _heroCurrentSlide = 0;
+
+  if (slides.length < 2) return; /* apenas 1 slide — não precisa de timer */
+
+  _heroSlideshowTimer = setInterval(() => {
+    const all = document.querySelectorAll('#heroSlides .hero__slide');
+    if (all.length < 2) return;
+    all[_heroCurrentSlide].classList.remove('hero__slide--active');
+    _heroCurrentSlide = (_heroCurrentSlide + 1) % all.length;
+    all[_heroCurrentSlide].classList.add('hero__slide--active');
+  }, 5000);
+}
+
+/* Adiciona slides da Galeria ao slideshow base.
+   Lê da coleção 'home_slides' (pública, sem auth) — espelhada pelo Admin ao marcar "Home".
+   Fallback: tenta 'gallery where showOnHome=true' caso home_slides esteja vazia.
+   Chamada uma única vez no evento window 'load'. */
+async function loadHeroSlides() {
+  if (_heroSlidesLoaded) return;
+
+  const container = document.getElementById('heroSlides');
+  if (!container) return;
+
+  const db = window.fbDb;
+  if (!db) {
+    console.error('[Hero] window.fbDb não disponível.');
+    return;
   }
 
-  setInterval(nextSlide, interval);
+  let images = [];
+
+  /* --- Tentativa 1: coleção pública home_slides --- */
+  try {
+    console.log('[Hero] Lendo coleção home_slides...');
+    const snap = await db.collection('home_slides').get();
+    console.log(`[Hero] home_slides retornou ${snap.size} documento(s).`);
+
+    if (!snap.empty) {
+      images = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(g => g.image_url)
+        .sort((a, b) => (a.created_at?.seconds || 0) - (b.created_at?.seconds || 0));
+    }
+  } catch (err) {
+    console.error('[Hero] Erro ao ler home_slides:', err.code, err.message);
+  }
+
+  /* --- Tentativa 2 (fallback): gallery where showOnHome=true --- */
+  if (images.length === 0) {
+    try {
+      console.log('[Hero] home_slides vazia — tentando gallery where showOnHome=true...');
+      const snap2 = await db.collection('gallery')
+        .where('showOnHome', '==', true)
+        .get();
+      console.log(`[Hero] gallery retornou ${snap2.size} documento(s) com showOnHome=true.`);
+      images = snap2.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(g => g.image_url)
+        .sort((a, b) => (a.created_at?.seconds || 0) - (b.created_at?.seconds || 0));
+    } catch (err2) {
+      console.error('[Hero] Erro ao ler gallery:', err2.code, err2.message,
+        '— Se for permission-denied, abra Firebase Console > Firestore > Rules e adicione: ' +
+        "match /gallery/{doc} { allow read: if true; }");
+    }
+  }
+
+  if (images.length === 0) {
+    console.log('[Hero] Sem imagens para Home — slides base mantidos.');
+    _heroSlidesLoaded = true;
+    return;
+  }
+
+  console.log(`[Hero] ${images.length} imagem(ns) encontrada(s):`, images.map(i => i.image_url));
+
+  /* Evita duplicação: verifica IDs já inseridos */
+  const alreadyAdded = new Set(
+    Array.from(container.querySelectorAll('[data-gallery-id]'))
+      .map(el => el.dataset.galleryId)
+  );
+
+  let added = 0;
+  const fragment = document.createDocumentFragment();
+  images.forEach(img => {
+    if (alreadyAdded.has(img.id)) return;
+    const div = document.createElement('div');
+    div.className = 'hero__slide';
+    div.dataset.galleryId = img.id;
+    div.innerHTML = `<img src="${img.image_url}" alt="${img.title || 'Teixeira Style'}" class="hero__slide-img" loading="lazy" />`;
+    fragment.appendChild(div);
+    added++;
+  });
+
+  if (added > 0) {
+    container.appendChild(fragment);
+    console.log(`[Hero] ${added} slide(s) adicionado(s) ao carrossel. Total no DOM:`,
+      container.querySelectorAll('.hero__slide').length);
+  }
+
+  _heroSlidesLoaded = true;
+
+  /* Inicia o slideshow depois que todos os slides estão no DOM */
+  initHeroSlideshow();
 }
 
 /* ============================================================
@@ -433,7 +534,61 @@ function initSearch() {
 }
 
 /* ============================================================
-   12. DESTAQUES DINÂMICOS
+   12. CATEGORIAS DINÂMICAS
+   ============================================================ */
+
+/* Fallback por slug — usado quando a categoria ainda não tem imagem no Firestore */
+const CAT_FALLBACK_IMGS = {
+  streetwear: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=80',
+  casual:     'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&q=80',
+  tenis:      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
+  esportivo:  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80',
+  infantil:   'https://images.unsplash.com/photo-1476234251651-f353703a034d?w=600&q=80',
+  cueca:      'https://images.unsplash.com/photo-1617952739218-c1b0fc50b5d8?w=600&q=80',
+  meia:       'https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=600&q=80',
+  bone:       'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600&q=80',
+  relogios:   'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
+  oculos:     'https://images.unsplash.com/photo-1508296695146-257a814070b4?w=600&q=80'
+};
+const CAT_IMG_DEFAULT = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80';
+
+async function loadHomeCategories() {
+  const grid = document.getElementById('categoriesGrid');
+  if (!grid) return;
+  const db = window.fbDb;
+  if (!db) return;
+  try {
+    const snap = await db.collection('categories').orderBy('name').get();
+    if (snap.empty) return;
+    const cards = snap.docs.map((doc, i) => {
+      const c    = doc.data();
+      const slug = c.slug || '';
+      /* Prioridade: imagem do Firestore → fallback pelo slug → fallback genérico */
+      const img  = c.image_url || CAT_FALLBACK_IMGS[slug] || CAT_IMG_DEFAULT;
+      const delay = (i * 0.1).toFixed(1);
+      return `<div class="category-card reveal" style="--delay: ${delay}s">
+        <div class="category-card__img-wrap">
+          <img src="${img}" alt="${c.name}" class="category-card__img" loading="lazy" />
+          <div class="category-card__overlay"></div>
+        </div>
+        <div class="category-card__content">
+          <h3 class="category-card__name">${c.name}</h3>
+          <a href="catalogo.html" class="category-card__link">Explorar <span>\u2192</span></a>
+        </div>
+      </div>`;
+    });
+    grid.innerHTML = cards.join('');
+    /* Registrar novos elementos para scroll-reveal e lazy-loading */
+    initScrollReveal();
+    initLazyLoading();
+  } catch (err) {
+    /* Firestore indisponível — grid permanece vazio sem quebrar a página */
+    console.warn('loadHomeCategories:', err);
+  }
+}
+
+/* ============================================================
+   13. DESTAQUES DINÂMICOS
    ============================================================ */
 async function loadHighlights() {
   const grid = document.getElementById('highlightsGrid');
@@ -455,7 +610,7 @@ async function loadHighlights() {
         <div class="product-card__info">
           <span class="product-card__category">${p.category_name || ''}</span>
           <h3 class="product-card__name">${p.name}</h3>
-          <a href="https://wa.me/5543960197610?text=Ol%C3%A1!%20Interesse%20em:%20${encodeURIComponent(p.name)}" target="_blank" rel="noopener" class="btn btn--outline btn--sm product-card__btn">Ver mais</a>
+          <a href="https://wa.me/${window.storeWhatsapp||'5543996019761'}?text=Ol%C3%A1!%20Interesse%20em:%20${encodeURIComponent(p.name)}" target="_blank" rel="noopener" class="btn btn--outline btn--sm product-card__btn">Ver mais</a>
         </div>
       </article>
     `).join('');
@@ -479,8 +634,8 @@ function init() {
   initCounters();
   initLogoFallback();
   initCardTilt();
-  initHeroSlideshow();
   initSearch();
+  loadHomeCategories();
   loadHighlights();
 }
 
@@ -490,3 +645,10 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
+
+/* loadHeroSlides() é chamada no window 'load', que dispara depois de todos os
+   scripts externos (Firebase CDN) estarem 100% prontos. As configurações da loja
+   são carregadas por js/settings-loader.js, incluído em cada HTML separadamente. */
+window.addEventListener('load', () => {
+  loadHeroSlides();
+});

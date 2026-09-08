@@ -9,8 +9,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Teko:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/catalogo.css" />
   <link rel="stylesheet" href="css/cart.css" />
+  <style>
+    .page-carrinho .navbar__logo { transform: scale(3.2); transform-origin: center; }
+    /* Corrige sobreposição do bloco auth na navbar */
+    .page-carrinho .navbar__actions { gap: 0.5rem; align-items: center; flex-wrap: nowrap; }
+    .page-carrinho .auth-btn { width: auto !important; height: auto !important; display: inline-flex !important; align-items: center; gap: 0.4rem; padding: 0.3rem 0.5rem; white-space: nowrap; max-width: 200px; overflow: visible; }
+    .page-carrinho .auth-btn .auth-btn__avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .page-carrinho .auth-btn .auth-btn__name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; }
+    .page-carrinho .auth-btn .auth-btn__sair { flex-shrink: 0; }
+    .page-carrinho .navbar__panel-link { display: none !important; }
+    .page-carrinho .auth-btn__avatar { cursor: pointer; }
+    .page-carrinho .auth-name { display: none; }
+    /* Rodapé colado na parte inferior */
+    .page-carrinho { display: flex; flex-direction: column; min-height: 100vh; }
+    .page-carrinho .cart-page { flex: 1 0 auto; padding-top: 5rem; padding-bottom: 2rem; display: flex; flex-direction: column; justify-content: center; }
+    .page-carrinho .cart-page__empty { padding: 1.5rem; }
+    .page-carrinho .cart-page__title { text-align: center; }
+    .page-carrinho .cat-footer { flex-shrink: 0; margin-top: auto; }
+    /* Ajuste do rodapé */
+    .page-carrinho .cat-footer { padding: 0; }
+    .page-carrinho .cat-footer__inner { padding: 0.6rem 2rem; align-items: center; min-height: unset; }
+    .page-carrinho .cat-footer__logo { height: 56px; width: auto; }
+  </style>
 </head>
-<body>
+<body class="page-carrinho">
 
   <!-- NAVBAR -->
   <nav class="navbar" id="navbar">
@@ -41,7 +63,7 @@
       <p>Seu carrinho está vazio.</p>
       <a href="catalogo.html" class="btn btn--gold">Ver catálogo</a>
     </div>
-    <div class="cart-page__content" id="cartContent">
+    <div class="cart-page__content hidden" id="cartContent">
       <div class="cart-items" id="cartItems"></div>
       <aside class="cart-summary">
         <h2>Resumo</h2>
@@ -65,9 +87,20 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/cart-ui.js"></script>
+  <script>
+    /* Carrinho: clique no avatar → abre painel; clique em Sair → logout */
+    document.addEventListener('click', function(e) {
+      const avatar = e.target.closest('.auth-btn__avatar');
+      if (avatar) {
+        e.stopImmediatePropagation();
+        window.location.href = 'cliente.html';
+      }
+    }, true); /* capture=true para interceptar antes do delegador do auth.js */
+  </script>
 </body>
 </html>

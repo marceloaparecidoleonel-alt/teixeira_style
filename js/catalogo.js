@@ -25,13 +25,13 @@ async function loadProducts() {
       allProducts = data;
       renderProducts();
     } else {
-      const staticCards = grid ? grid.querySelectorAll('.product-card') : [];
-      if (resultCount) resultCount.textContent = staticCards.length;
+      if (resultCount) resultCount.textContent = '0';
+      if (noResults) noResults.classList.remove('hidden');
     }
   } catch (err) {
     console.error('Failed to load products:', err);
-    const staticCards = grid ? grid.querySelectorAll('.product-card') : [];
-    if (resultCount) resultCount.textContent = staticCards.length;
+    if (resultCount) resultCount.textContent = '0';
+    if (noResults) noResults.classList.remove('hidden');
   }
 }
 
@@ -105,17 +105,6 @@ function createProductCard(product) {
   `;
 }
 
-/* ---- STATIC PRODUCTS FALLBACK ---- */
-const staticProducts = {
-  'camiseta-oversize-preta': { id: 'camiseta-oversize-preta', name: 'Camiseta Oversize Preta', category_name: 'Camisetas', price: '', image_url: 'assets/images/camiseta.png', description: 'Camiseta Oversize em malha premium 100% algodão. Corte amplo e confortável, ideal para o dia a dia streetwear.', sizes: 'P,M,G,GG', availability: 'available', material: '100% Algodão Premium' },
-  'moletom-essential-cinza': { id: 'moletom-essential-cinza', name: 'Moletom Essential Cinza', category_name: 'Moletons', price: '', image_url: 'assets/images/camiseta2.png', description: 'Moletom Essential com capuz em moletom felpado. Estampa exclusiva Teixeira Style. Peça versátil para looks casuais.', sizes: 'M,G,GG,XG', availability: 'available', material: 'Moletom Felpado 380g' },
-  'bone-trucker-branco': { id: 'bone-trucker-branco', name: 'Boné Trucker Branco', category_name: 'Bonés', price: '', image_url: 'assets/images/camiseta.png', description: 'Boné Trucker com tela traseira e bordado frontal. Ajuste snapback universal.', sizes: 'Único', availability: 'available', material: 'Algodão + Tela' },
-  'calca-cargo-bege': { id: 'calca-cargo-bege', name: 'Calça Cargo Bege', category_name: 'Calças', price: '', image_url: 'assets/images/camiseta2.png', description: 'Calça Cargo com múltiplos bolsos e cintura ajustável. Tecido sarja resistente e confortável.', sizes: '38,40,42,44', availability: 'available', material: 'Sarja 98% Algodão' },
-  'jaqueta-corta-vento-preta': { id: 'jaqueta-corta-vento-preta', name: 'Jaqueta Corta-Vento Preta', category_name: 'Jaquetas', price: '', image_url: 'assets/images/camiseta.png', description: 'Jaqueta corta-vento leve e resistente. Zíper duplo e bolsos laterais com fecho.', sizes: 'P,M,G', availability: 'available', material: 'Nylon Ripstop' },
-  'camiseta-cropped-branca': { id: 'camiseta-cropped-branca', name: 'Camiseta Cropped Branca', category_name: 'Camisetas', price: '', image_url: 'assets/images/camiseta2.png', description: 'Camiseta Cropped feminina com estampa gráfica exclusiva. Malha leve e macia.', sizes: 'P,M,G', availability: 'available', material: '100% Algodão Penteado' },
-  'moletom-cropped-nude': { id: 'moletom-cropped-nude', name: 'Moletom Cropped Nude', category_name: 'Moletons', price: '', image_url: 'assets/images/camiseta.png', description: 'Moletom Cropped na cor nude com ribana. Peça sofisticada e confortável.', sizes: 'P,M,G', availability: 'unavailable', material: 'Moletom Felpado 320g' },
-  'mochila-streetwear-preta': { id: 'mochila-streetwear-preta', name: 'Mochila Streetwear Preta', category_name: 'Acessórios', price: '', image_url: 'assets/images/camiseta2.png', description: 'Mochila streetwear com compartimentos organizados e estampa exclusiva. Capacidade 25L.', sizes: 'Único', availability: 'available', material: 'Nylon + Poliéster' },
-};
 
 /* ---- PRODUCT MODAL ---- */
 let currentModalProduct = null;
@@ -131,7 +120,6 @@ async function openProductModal(id, action = 'cart') {
     } catch(e) {}
   }
 
-  if (!p) p = staticProducts[id] || null;
   if (!p) return;
 
   currentModalProduct = p;
@@ -189,11 +177,6 @@ function closeProductModal() {
   currentModalProduct = null;
 }
 
-function requireLogin() {
-  const go = confirm('Faça login com Google para continuar.\nDeseja fazer login agora?');
-  if (go) signInWithGoogle();
-}
-
 function getSelectedSize() {
   const sel = document.querySelector('#modalSizes .modal-size.selected');
   return sel ? sel.dataset.size : 'Único';
@@ -201,14 +184,34 @@ function getSelectedSize() {
 
 document.getElementById('modalAddToCart')?.addEventListener('click', () => {
   if (!currentModalProduct || currentModalProduct.availability !== 'available') return;
-  if (!window.currentUser) { requireLogin(); return; }
+  if (!window.currentUser) {
+    /* Salva a ação para ser executada automaticamente após o login */
+    window.__pendingCartAction = {
+      type: 'addToCart',
+      product: currentModalProduct,
+      size: getSelectedSize(),
+      qty: 1,
+      onSuccess: () => showToastModal('Produto adicionado ao carrinho!')
+    };
+    if (typeof signInWithGoogle === 'function') signInWithGoogle();
+    return;
+  }
   addToCart(currentModalProduct, getSelectedSize(), 1);
   showToastModal('Produto adicionado ao carrinho!');
 });
 
 document.getElementById('modalBuyNow')?.addEventListener('click', () => {
   if (!currentModalProduct || currentModalProduct.availability !== 'available') return;
-  if (!window.currentUser) { requireLogin(); return; }
+  if (!window.currentUser) {
+    window.__pendingCartAction = {
+      type: 'buyNow',
+      product: currentModalProduct,
+      size: getSelectedSize(),
+      qty: 1
+    };
+    if (typeof signInWithGoogle === 'function') signInWithGoogle();
+    return;
+  }
   addToCart(currentModalProduct, getSelectedSize(), 1);
   window.location.href = 'checkout.html';
 });
@@ -227,14 +230,38 @@ document.getElementById('productModal')?.addEventListener('click', e => {
 });
 
 /* ---- CATEGORY FILTER ---- */
-catBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    catBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentCat = btn.dataset.cat;
-    renderProducts();
+function bindCatBtns() {
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCat = btn.dataset.cat;
+      renderProducts();
+    });
   });
-});
+}
+
+async function loadCategoryFilters() {
+  const container = document.getElementById('catFilters');
+  if (!container) { bindCatBtns(); return; }
+  const db = window.fbDb;
+  if (!db) { bindCatBtns(); return; }
+  try {
+    const snap = await db.collection('categories').orderBy('name').get();
+    if (snap.empty) { bindCatBtns(); return; }
+    /* Monta botões a partir do Firestore */
+    const btns = ['<button class="cat-btn active" data-cat="todos">Todos</button>'];
+    snap.docs.forEach(doc => {
+      const c = doc.data();
+      const slug = c.slug || (c.name ? c.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'') : '');
+      btns.push(`<button class="cat-btn" data-cat="${slug}">${c.name}</button>`);
+    });
+    container.innerHTML = btns.join('');
+  } catch {
+    /* Se falhar, mantém os botões estáticos do HTML */
+  }
+  bindCatBtns();
+}
 
 /* ---- SEARCH ---- */
 searchInput.addEventListener('input', () => {
@@ -254,4 +281,4 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 /* ---- INIT ---- */
-loadProducts();
+loadCategoryFilters().then(loadProducts);

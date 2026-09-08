@@ -113,6 +113,13 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
 
   try {
     const docRef = await db.collection('orders').add(order);
+    /* Registra atividade no log do painel admin */
+    db.collection('activity_logs').add({
+      type: 'pedido_recebido',
+      description: `Novo pedido <strong>#${docRef.id.slice(-6)}</strong> de ${order.full_name}`,
+      color: 'green',
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(() => {});
     clearCart();
 
     if (payment === 'mercadopago') {

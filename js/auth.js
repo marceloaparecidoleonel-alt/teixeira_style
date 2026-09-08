@@ -4,14 +4,34 @@
 
 const auth = window.fbAuth;
 
+/* ---- E-mail do administrador ---- */
+const ADMIN_EMAIL = 'teixeirastyle@gmail.com';
+
+function isAdminEmail(email) {
+  return typeof email === 'string' && email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+}
+
+/* Flag para evitar redirecionamentos duplos ao admin */
+let _redirectingToAdmin = false;
+
 /* Sessão persistente — mantém login ao fechar/reabrir o browser */
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => {
+  console.error('Falha ao definir persistência:', err && err.message);
+});
 
 /* Estado do usuário */
 window.currentUser = null;
+window.__authReady = false;
+
+/* Oculta o botão imediatamente enquanto a sessão é verificada */
+if (document.body) document.body.classList.add('auth-loading');
 
 /* ---- UI do botão de login/logout ---- */
 function updateAuthUI() {
+  /* Não altera o botão enquanto o Firebase ainda verifica a sessão inicial.
+     Isso evita o "flash" de Entrar→Sair durante o carregamento da página. */
+  if (!window.__authReady) return;
+
   const user = window.currentUser;
   document.querySelectorAll('.auth-btn').forEach(el => {
     if (user) {
@@ -19,7 +39,7 @@ function updateAuthUI() {
         ? `<img src="${user.photoURL}" class="auth-btn__avatar" alt="" referrerpolicy="no-referrer" />`
         : `<span class="auth-btn__avatar auth-btn__avatar--initials">${(user.displayName || user.email || '?')[0].toUpperCase()}</span>`;
       const name = user.displayName ? user.displayName.split(' ')[0] : '';
-      el.innerHTML = `${photo}${name ? `<span class="auth-btn__name">${name}</span>` : ''}<span class="auth-btn__sair">· Sair</span>`;
+      el.innerHTML = `${photo}${name ? `<span class="auth-btn__name">${name}</span>` : ''}<span class="auth-btn__sair">Sair</span>`;
       el.dataset.action = 'logout';
       el.classList.remove('navbar__google-btn');
       el.classList.add('navbar__logout-btn');
@@ -32,7 +52,27 @@ function updateAuthUI() {
   });
   document.querySelectorAll('.auth-name').forEach(el => {
     el.textContent = user ? (user.displayName || user.email) : '';
+    el.style.display = user ? '' : 'none';
   });
+
+  /* Adiciona o link "Painel" nas actions do header quando o usuário está logado */
+  document.querySelectorAll('.navbar__actions').forEach(actions => {
+    let panelLink = actions.querySelector('.navbar__panel-link');
+    if (user) {
+      if (!panelLink) {
+        panelLink = document.createElement('a');
+        panelLink.href = 'cliente.html';
+        panelLink.className = 'navbar__panel-link';
+        panelLink.textContent = 'Painel';
+        actions.insertBefore(panelLink, actions.firstElementChild);
+      }
+      panelLink.style.display = ''; /* deixa o CSS decidir */
+    } else if (panelLink) {
+      panelLink.style.display = 'none';
+    }
+  });
+
+  document.body.classList.remove('auth-loading');
 }
 
 /* ---- Login com Google (popup) ---- */
@@ -42,17 +82,20 @@ async function signInWithGoogle() {
   if (_loginInProgress) return;
   _loginInProgress = true;
   const provider = new firebase.auth.GoogleAuthProvider();
+  /* Força a tela de escolha de conta do Google a aparecer sempre.
+     Isso garante que trocar de conta (A → B) funcione corretamente. */
   provider.setCustomParameters({ prompt: 'select_account' });
   try {
     await auth.signInWithPopup(provider);
   } catch (err) {
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-      console.error('Login error:', err.code);
+      console.error('Login error:', err.code, err.message);
     }
   } finally {
     _loginInProgress = false;
   }
 }
+window.signInWithGoogle = signInWithGoogle;
 
 /* ---- Modal de confirmação de logout ---- */
 function showLogoutModal() {
@@ -85,11 +128,76 @@ function hideLogoutModal() {
   if (modal) modal.classList.remove('logout-modal--visible');
 }
 
+/* ---- Ação pendente: executada automaticamente após login ---- */
+/* Formato: { type: 'addToCart'|'buyNow', product, size, qty } */
+window.__pendingCartAction = null;
+
+async function executePendingCartAction() {
+  const action = window.__pendingCartAction;
+  if (!action || !window.currentUser) return;
+  window.__pendingCartAction = null;
+
+  if (action.type === 'addToCart') {
+    if (typeof addToCart === 'function') {
+      addToCart(action.product, action.size, action.qty);
+    }
+    if (typeof action.onSuccess === 'function') action.onSuccess();
+  } else if (action.type === 'buyNow') {
+    if (typeof addToCart === 'function') {
+      addToCart(action.product, action.size, action.qty);
+    }
+    window.location.href = 'checkout.html';
+  }
+}
+
 /* ---- Listener de estado de autenticação ---- */
-auth.onAuthStateChanged(user => {
+auth.onAuthStateChanged(async user => {
+  const previousUser = window.currentUser;
   window.currentUser = user;
+  window.__authReady = true;
+
+  if (user && isAdminEmail(user.email)) {
+    /* Administrador identificado */
+    document.body.classList.remove('auth-loading');
+    if (!window.location.pathname.endsWith('admin.html') && !_redirectingToAdmin) {
+      _redirectingToAdmin = true;
+      window.location.href = 'admin.html';
+    }
+    /* Se já está em admin.html, não altera a UI de cliente — o admin.js controla */
+    return;
+  }
+
+  /* Fluxo normal dos clientes (e-mail diferente do admin) */
   updateAuthUI();
-  if (user && typeof loadCartFromFirestore === 'function') loadCartFromFirestore();
+
+  if (user) {
+    /* Sincroniza/cria documento do cliente no Firestore (sem sobrescrever campos existentes) */
+    try {
+      const clientRef = window.fbDb.collection('clients').doc(user.uid);
+      await clientRef.set({
+        nome:         user.displayName || '',
+        email:        user.email       || '',
+        foto:         user.photoURL    || '',
+        ultimo_acesso: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      /* Cria campo criado_em apenas na primeira vez (merge não sobrescreve se já existir) */
+      const snap = await clientRef.get();
+      if (!snap.data()?.criado_em) {
+        await clientRef.update({ criado_em: firebase.firestore.FieldValue.serverTimestamp() });
+      }
+    } catch (e) { /* Firestore indisponível — não bloqueia o login */ }
+
+    if (typeof loadCartFromFirestore === 'function') {
+      await loadCartFromFirestore();
+    }
+    if (window.__pendingCartAction) {
+      await executePendingCartAction();
+    }
+  } else {
+    if (previousUser && typeof clearLocalCart === 'function') {
+      clearLocalCart();
+    }
+  }
 });
 
 /* ---- Delegação de cliques ---- */
@@ -103,8 +211,14 @@ document.addEventListener('click', e => {
 /* ---- Contador do carrinho ---- */
 function updateCartCount() {
   const cart = JSON.parse(localStorage.getItem('ts_cart') || '[]');
-  document.querySelectorAll('.cart-count').forEach(el => { el.textContent = cart.length; });
+  const total = cart.reduce((sum, i) => sum + (parseInt(i.qty) || 1), 0);
+  document.querySelectorAll('.cart-count').forEach(el => { el.textContent = total || ''; });
 }
 window.updateCartCount = updateCartCount;
 updateCartCount();
 window.addEventListener('storage', e => { if (e.key === 'ts_cart') updateCartCount(); });
+
+/* ---- Inicialização: oculta o botão até o Firebase decidir o estado ---- */
+document.addEventListener('DOMContentLoaded', () => {
+  document.body.classList.add('auth-loading');
+});

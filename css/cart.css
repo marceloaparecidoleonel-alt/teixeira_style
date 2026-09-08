@@ -15,8 +15,15 @@
 .navbar__logout-btn:hover { opacity: 0.8; }
 .auth-btn__avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0; }
 .auth-btn__avatar--initials { display: inline-flex; align-items: center; justify-content: center; background: #C9A66B; color: #0B0B0F; font-size: 0.72rem; font-weight: 700; }
+/* Oculta o botão de login/logout enquanto a sessão do Firebase ainda é verificada,
+   evitando o "flash" de Entrar→Sair durante o carregamento. */
+.auth-loading .auth-btn { opacity: 0; pointer-events: none; transition: opacity .15s ease; }
+body:not(.auth-loading) .auth-btn { opacity: 1; transition: opacity .15s ease; }
+
 .auth-btn__name { font-weight: 600; color: #fff; font-size: 0.82rem; }
 .auth-btn__sair { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.55); font-size: 0.62rem; font-weight: 500; padding: 0.15rem 0.5rem; border-radius: 20px; letter-spacing: 0.03em; }
+.navbar__panel-link { display: inline-flex; align-items: center; color: rgba(255,255,255,0.6); font-size: 0.72rem; font-weight: 500; padding: 0.4rem 0.6rem; border-radius: 4px; transition: color .2s, background .2s; font-family: inherit; }
+.navbar__panel-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
 
 /* ---- Modal de confirmação de logout ---- */
 #logoutModal { display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; }

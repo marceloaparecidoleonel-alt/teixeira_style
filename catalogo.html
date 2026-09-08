@@ -12,7 +12,7 @@
 <body>
 
   <!-- TOPBAR ANIMADA -->
-  <div class="topbar">
+  <div class="topbar" id="topbar">
     <div class="topbar__track">
       <div class="topbar__marquee">
         <span>✦ STREETWEAR PREMIUM EM RIBEIRÃO CLARO — PR</span>
@@ -57,212 +57,13 @@
       </div>
     </div>
     <div class="filters-bar__count">
-      <span id="resultCount">8</span> peças encontradas
+      <span id="resultCount">0</span> peças encontradas
     </div>
   </section>
 
   <!-- GRID DE PRODUTOS -->
   <main class="catalog-main">
     <div class="product-grid" id="productGrid">
-
-      <!-- Produto 1 -->
-      <article class="product-card" data-cat="camisetas masculino" data-name="Camiseta Oversize Preta" data-id="camiseta-oversize-preta" onclick="window.location.href='produto.html?id=camiseta-oversize-preta'" style="cursor:pointer">
-        <div class="product-card__img-wrap">
-          <img src="assets/images/camiseta.png" alt="Camiseta Oversize Preta" class="product-card__img" loading="lazy" />
-          <div class="product-card__overlay">
-            <button type="button" class="product-card__cta product-card__cta--buy" onclick="event.stopPropagation(); window.location.href='produto.html?id=camiseta-oversize-preta&action=buy'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-              Comprar
-            </button>
-            <button type="button" class="product-card__cta product-card__cta--cart" onclick="event.stopPropagation(); window.location.href='produto.html?id=camiseta-oversize-preta'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Carrinho
-            </button>
-          </div>
-          <span class="product-card__badge">Novo</span>
-        </div>
-        <div class="product-card__info">
-          <p class="product-card__cat">Camisetas</p>
-          <h3 class="product-card__name">Camiseta Oversize Preta</h3>
-          <div class="product-card__sizes">
-            <span class="size-tag">P</span><span class="size-tag">M</span><span class="size-tag">G</span><span class="size-tag">GG</span>
-          </div>
-          <span class="product-card__status available">Disponível</span>
-        </div>
-      </article>
-
-      <!-- Produto 2 -->
-      <article class="product-card" data-cat="moletons masculino" data-name="Moletom Essential Cinza" data-id="moletom-essential-cinza" onclick="window.location.href='produto.html?id=moletom-essential-cinza'" style="cursor:pointer">
-        <div class="product-card__img-wrap">
-          <img src="assets/images/camiseta2.png" alt="Moletom Essential Cinza" class="product-card__img" loading="lazy" />
-          <div class="product-card__overlay">
-            <button type="button" class="product-card__cta product-card__cta--buy" onclick="event.stopPropagation(); window.location.href='produto.html?id=moletom-essential-cinza&action=buy'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-              Comprar
-            </button>
-            <button type="button" class="product-card__cta product-card__cta--cart" onclick="event.stopPropagation(); window.location.href='produto.html?id=moletom-essential-cinza'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Carrinho
-            </button>
-          </div>
-        </div>
-        <div class="product-card__info">
-          <p class="product-card__cat">Moletons</p>
-          <h3 class="product-card__name">Moletom Essential Cinza</h3>
-          <div class="product-card__sizes">
-            <span class="size-tag">M</span><span class="size-tag">G</span><span class="size-tag">GG</span><span class="size-tag">XG</span>
-          </div>
-          <span class="product-card__status available">Disponível</span>
-        </div>
-      </article>
-
-      <!-- Produto 3 -->
-      <article class="product-card" data-cat="bones masculino feminino" data-name="Boné Trucker Branco" data-id="bone-trucker-branco" onclick="window.location.href='produto.html?id=bone-trucker-branco'" style="cursor:pointer">
-        <div class="product-card__img-wrap">
-          <img src="assets/images/camiseta.png" alt="Boné Trucker Branco" class="product-card__img" loading="lazy" />
-          <div class="product-card__overlay">
-            <button type="button" class="product-card__cta product-card__cta--buy" onclick="event.stopPropagation(); window.location.href='produto.html?id=bone-trucker-branco&action=buy'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-              Comprar
-            </button>
-            <button type="button" class="product-card__cta product-card__cta--cart" onclick="event.stopPropagation(); window.location.href='produto.html?id=bone-trucker-branco'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Carrinho
-            </button>
-          </div>
-          <span class="product-card__badge product-card__badge--off">Esgotando</span>
-        </div>
-        <div class="product-card__info">
-          <p class="product-card__cat">Bonés</p>
-          <h3 class="product-card__name">Boné Trucker Branco</h3>
-          <div class="product-card__sizes">
-            <span class="size-tag">Único</span>
-          </div>
-          <span class="product-card__status available">Disponível</span>
-        </div>
-      </article>
-
-      <!-- Produto 4 -->
-      <article class="product-card" data-cat="calcas masculino" data-name="Calça Cargo Bege" data-id="calca-cargo-bege" onclick="window.location.href='produto.html?id=calca-cargo-bege'" style="cursor:pointer">
-        <div class="product-card__img-wrap">
-          <img src="assets/images/camiseta2.png" alt="Calça Cargo Bege" class="product-card__img" loading="lazy" />
-          <div class="product-card__overlay">
-            <button type="button" class="product-card__cta product-card__cta--buy" onclick="event.stopPropagation(); window.location.href='produto.html?id=calca-cargo-bege&action=buy'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-              Comprar
-            </button>
-            <button type="button" class="product-card__cta product-card__cta--cart" onclick="event.stopPropagation(); window.location.href='produto.html?id=calca-cargo-bege'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Carrinho
-            </button>
-          </div>
-          <span class="product-card__badge">Novo</span>
-        </div>
-        <div class="product-card__info">
-          <p class="product-card__cat">Calças</p>
-          <h3 class="product-card__name">Calça Cargo Bege</h3>
-          <div class="product-card__sizes">
-            <span class="size-tag">38</span><span class="size-tag">40</span><span class="size-tag">42</span><span class="size-tag">44</span>
-          </div>
-          <span class="product-card__status available">Disponível</span>
-        </div>
-      </article>
-
-      <!-- Produto 5 -->
-      <article class="product-card" data-cat="jaquetas masculino" data-name="Jaqueta Corta-Vento Preta" data-id="jaqueta-corta-vento-preta" onclick="window.location.href='produto.html?id=jaqueta-corta-vento-preta'" style="cursor:pointer">
-        <div class="product-card__img-wrap">
-          <img src="assets/images/camiseta.png" alt="Jaqueta Corta-Vento Preta" class="product-card__img" loading="lazy" />
-          <div class="product-card__overlay">
-            <button type="button" class="product-card__cta product-card__cta--buy" onclick="event.stopPropagation(); window.location.href='produto.html?id=jaqueta-corta-vento-preta&action=buy'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-              Comprar
-            </button>
-            <button type="button" class="product-card__cta product-card__cta--cart" onclick="event.stopPropagation(); window.location.href='produto.html?id=jaqueta-corta-vento-preta'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Carrinho
-            </button>
-          </div>
-        </div>
-        <div class="product-card__info">
-          <p class="product-card__cat">Jaquetas</p>
-          <h3 class="product-card__name">Jaqueta Corta-Vento Preta</h3>
-          <div class="product-card__sizes">
-            <span class="size-tag">P</span><span class="size-tag">M</span><span class="size-tag">G</span>
-          </div>
-          <span class="product-card__status available">Disponível</span>
-        </div>
-      </article>
-
-      <!-- Produto 6 -->
-      <article class="product-card" data-cat="camisetas feminino" data-name="Camiseta Cropped Branca" data-id="camiseta-cropped-branca" onclick="window.location.href='produto.html?id=camiseta-cropped-branca'" style="cursor:pointer">
-        <div class="product-card__img-wrap">
-          <img src="assets/images/camiseta2.png" alt="Camiseta Cropped Branca" class="product-card__img" loading="lazy" />
-          <div class="product-card__overlay">
-            <button type="button" class="product-card__cta product-card__cta--buy" onclick="event.stopPropagation(); window.location.href='produto.html?id=camiseta-cropped-branca&action=buy'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-              Comprar
-            </button>
-            <button type="button" class="product-card__cta product-card__cta--cart" onclick="event.stopPropagation(); window.location.href='produto.html?id=camiseta-cropped-branca'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Carrinho
-            </button>
-          </div>
-          <span class="product-card__badge">Novo</span>
-        </div>
-        <div class="product-card__info">
-          <p class="product-card__cat">Camisetas</p>
-          <h3 class="product-card__name">Camiseta Cropped Branca</h3>
-          <div class="product-card__sizes">
-            <span class="size-tag">P</span><span class="size-tag">M</span><span class="size-tag">G</span>
-          </div>
-          <span class="product-card__status available">Disponível</span>
-        </div>
-      </article>
-
-      <!-- Produto 7 -->
-      <article class="product-card" data-cat="moletons feminino" data-name="Moletom Cropped Nude" data-id="moletom-cropped-nude" onclick="window.location.href='produto.html?id=moletom-cropped-nude'" style="cursor:pointer">
-        <div class="product-card__img-wrap">
-          <img src="assets/images/camiseta.png" alt="Moletom Cropped Nude" class="product-card__img" loading="lazy" />
-          <div class="product-card__overlay">
-            <button type="button" class="product-card__cta product-card__cta--disabled" disabled>Indisponível</button>
-          </div>
-        </div>
-        <div class="product-card__info">
-          <p class="product-card__cat">Moletons</p>
-          <h3 class="product-card__name">Moletom Cropped Nude</h3>
-          <div class="product-card__sizes">
-            <span class="size-tag">P</span><span class="size-tag">M</span><span class="size-tag">G</span>
-          </div>
-          <span class="product-card__status unavailable">Indisponível</span>
-        </div>
-      </article>
-
-      <!-- Produto 8 -->
-      <article class="product-card" data-cat="acessorios masculino feminino" data-name="Mochila Streetwear Preta" data-id="mochila-streetwear-preta" onclick="window.location.href='produto.html?id=mochila-streetwear-preta'" style="cursor:pointer">
-        <div class="product-card__img-wrap">
-          <img src="assets/images/camiseta2.png" alt="Mochila Streetwear Preta" class="product-card__img" loading="lazy" />
-          <div class="product-card__overlay">
-            <button type="button" class="product-card__cta product-card__cta--buy" onclick="event.stopPropagation(); window.location.href='produto.html?id=mochila-streetwear-preta&action=buy'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-              Comprar
-            </button>
-            <button type="button" class="product-card__cta product-card__cta--cart" onclick="event.stopPropagation(); window.location.href='produto.html?id=mochila-streetwear-preta'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Carrinho
-            </button>
-          </div>
-          <span class="product-card__badge">Novo</span>
-        </div>
-        <div class="product-card__info">
-          <p class="product-card__cat">Acessórios</p>
-          <h3 class="product-card__name">Mochila Streetwear Preta</h3>
-          <div class="product-card__sizes">
-            <span class="size-tag">Único</span>
-          </div>
-          <span class="product-card__status available">Disponível</span>
-        </div>
-      </article>
-
     </div>
 
     <!-- NENHUM RESULTADO -->
@@ -279,7 +80,7 @@
       <p class="cat-cta__eyebrow">Não encontrou o que procura?</p>
       <h2 class="cat-cta__title">Fale diretamente<br />com a gente</h2>
       <p class="cat-cta__sub">Atendimento personalizado via WhatsApp. Consulte disponibilidade, tamanhos e novidades.</p>
-      <a href="https://wa.me/5543996019761" target="_blank" rel="noopener" class="cat-cta__btn">
+      <a href="https://wa.me/5543996019761" target="_blank" rel="noopener" class="cat-cta__btn" id="catCtaWaLink">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.116 1.524 5.847L.057 23.882l6.196-1.625A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.368l-.36-.214-3.717.975.992-3.625-.235-.372A9.818 9.818 0 012.182 12C2.182 6.578 6.578 2.182 12 2.182S21.818 6.578 21.818 12 17.422 21.818 12 21.818z"/></svg>
         Falar no WhatsApp
       </a>
@@ -289,7 +90,6 @@
   <!-- FOOTER SIMPLES -->
   <footer class="cat-footer">
     <div class="cat-footer__inner">
-      <img src="assets/images/imagem.png" alt="Teixeira Style" class="cat-footer__logo" />
       <p>R. Cel. Joaquim Ribeiro Gomes, 20 &nbsp;·&nbsp; Ribeirão Claro — PR, 86410-000 &nbsp;·&nbsp; (43) 9 9601-9761 &nbsp;·&nbsp; @loja_teixeira_style</p>
       <a href="index.html" class="cat-footer__link">← Voltar ao início</a>
     </div>
@@ -355,7 +155,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/settings-loader.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/catalogo.js"></script>
