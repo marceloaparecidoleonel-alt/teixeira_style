@@ -81,12 +81,20 @@ function updateAuthUI() {
 const _isProd = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 let _loginInProgress = false;
 
-/* Gate: segura o onAuthStateChanged até getRedirectResult resolver em produção.
-   Sem isso, onAuthStateChanged dispara user=null antes do redirect ser commitado. */
+/* Garante que auth-loading não esconde o botão para sempre — timeout de segurança */
+setTimeout(function() {
+  document.body.classList.remove('auth-loading');
+}, 3000);
+
+/* Em produção: processa resultado de redirect assim que a página volta do Google */
 let _redirectReady = Promise.resolve();
 if (_isProd) {
   _redirectReady = auth.getRedirectResult().then(function(result) {
     if (result && result.user) {
+      /* Usuário veio de redirect — atualiza estado manualmente e renderiza UI */
+      window.currentUser = result.user;
+      window.__authReady = true;
+      updateAuthUI();
       console.log('[Auth] Redirect login ok:', result.user.email);
     }
   }).catch(function(err) {
@@ -103,10 +111,10 @@ async function signInWithGoogle() {
   provider.setCustomParameters({ prompt: 'select_account' });
   try {
     if (_isProd) {
-      /* Redirect é o único método 100% confiável fora do authDomain */
       await auth.signInWithRedirect(provider);
     } else {
       await auth.signInWithPopup(provider);
+      _loginInProgress = false;
     }
   } catch (err) {
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
@@ -172,8 +180,6 @@ async function executePendingCartAction() {
 
 /* ---- Listener de estado de autenticação ---- */
 auth.onAuthStateChanged(async user => {
-  /* Aguarda getRedirectResult resolver antes de processar o estado */
-  await _redirectReady;
   const previousUser = window.currentUser;
   window.currentUser = user;
   window.__authReady = true;
