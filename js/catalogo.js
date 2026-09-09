@@ -40,7 +40,7 @@ function renderProducts() {
   let filtered = allProducts.filter(p => {
     const slug = p.category_slug || (p.category_name ? p.category_name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-') : '');
     const matchCat = currentCat === 'todos' || slug === currentCat;
-    const matchSearch = p.name.toLowerCase().includes(currentSearch) || (p.reference_code && p.reference_code.toLowerCase().includes(currentSearch));
+    const matchSearch = p.name.toLowerCase().includes(currentSearch) || (p.material && p.material.toLowerCase().includes(currentSearch));
     return matchCat && matchSearch;
   });
 

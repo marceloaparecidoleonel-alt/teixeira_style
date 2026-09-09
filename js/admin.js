@@ -451,7 +451,7 @@ function renderProductsTable(products) {
         </div>
       </td>
       <td>${p.category_name || '-'}</td>
-      <td>${p.reference_code || '-'}</td>
+      <td>${p.material || '-'}</td>
       <td><span class="badge badge--${(p.stock != null ? p.stock : (p.availability === 'available' ? 1 : 0)) > 0 ? 'success' : 'danger'}">${p.stock != null ? (p.stock > 0 ? p.stock + ' un.' : 'Esgotado') : (p.availability === 'available' ? 'Disponível' : 'Indisponível')}</span></td>
       <td>
         <div class="action-btns">
@@ -474,7 +474,7 @@ async function populateCatFilter() {
 document.getElementById('productSearch')?.addEventListener('input', function () {
   const q = this.value.toLowerCase();
   renderProductsTable(allProducts.filter(p =>
-    p.name.toLowerCase().includes(q) || (p.reference_code||'').toLowerCase().includes(q)
+    p.name.toLowerCase().includes(q) || (p.material||'').toLowerCase().includes(q)
   ));
 });
 document.getElementById('productCatFilter')?.addEventListener('change', function () {
@@ -656,7 +656,7 @@ async function openEditProduct(id) {
     const docSnap = await db.collection('products').doc(id).get();
     const p = docSnap.data();
     document.getElementById('modalProductName').value  = p.name || '';
-    document.getElementById('modalProductRef').value   = p.reference_code || '';
+    document.getElementById('modalProductMaterial').value = p.material || '';
     document.getElementById('modalProductPrice').value = p.price != null ? p.price : '';
     document.getElementById('modalProductDesc').value  = p.description || '';
     document.getElementById('modalProductStock').value = p.stock != null ? p.stock : (p.availability === 'available' ? 10 : 0);
@@ -682,7 +682,7 @@ document.getElementById('productForm')?.addEventListener('submit', async e => {
   if (_uploadInProgress) return; /* proteção contra duplo clique */
 
   const name  = document.getElementById('modalProductName').value.trim();
-  const ref   = document.getElementById('modalProductRef').value.trim();
+  const material = document.getElementById('modalProductMaterial').value.trim();
   const price = parseFloat(document.getElementById('modalProductPrice').value);
   const desc  = document.getElementById('modalProductDesc').value.trim();
   const stock = Math.max(0, parseInt(document.getElementById('modalProductStock').value, 10) || 0);
@@ -743,7 +743,7 @@ document.getElementById('productForm')?.addEventListener('submit', async e => {
     const imageUrl = existingImageUrls[0] || '';
 
     const data = {
-      name, slug: makeSlug(name), reference_code: ref, price,
+      name, slug: makeSlug(name), material, price,
       description: desc, sizes: getSelectedSizes(), availability: avail, stock,
       status: 'active', category_id: catId, category_name: catName,
       category_slug: catSlug,
@@ -1614,8 +1614,8 @@ document.getElementById('settingsAppearanceBtn')?.addEventListener('click', asyn
 
     /* Produtos */
     (allProducts || []).forEach(p => {
-      const haystack = `${p.name} ${p.reference_code || ''} ${p.category_name || ''}`.toLowerCase();
-      if (haystack.includes(q)) results.push({ section: 'Produtos', icon: '📦', label: p.name, sub: p.reference_code || '', page: 'products', filter: q });
+      const haystack = `${p.name} ${p.material || ''} ${p.category_name || ''}`.toLowerCase();
+      if (haystack.includes(q)) results.push({ section: 'Produtos', icon: '📦', label: p.name, sub: p.material || '', page: 'products', filter: q });
     });
 
     /* Clientes */
