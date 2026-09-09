@@ -134,24 +134,25 @@ auth.onAuthStateChanged(async user => {
 });
 
 /* Botão de login com Google na tela de login do admin */
-let _adminLoginInProgress = false;
-
 document.getElementById('adminGoogleBtn')?.addEventListener('click', async () => {
-  if (_adminLoginInProgress) return;
-  _adminLoginInProgress = true;
   const errEl = document.getElementById('loginError');
   if (errEl) errEl.textContent = '';
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    await auth.signInWithPopup(provider);
+    await auth.signInWithRedirect(provider);
   } catch (err) {
-    if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-      console.error('Admin login error:', err.code, err.message);
-      if (errEl) errEl.textContent = 'Erro ao autenticar. Tente novamente.';
-    }
-  } finally {
-    _adminLoginInProgress = false;
+    console.error('Admin login error:', err.code, err.message);
+    if (errEl) errEl.textContent = 'Erro ao autenticar. Tente novamente.';
+  }
+});
+
+/* Processa retorno do redirect do Google */
+auth.getRedirectResult().catch(err => {
+  if (err.code !== 'auth/no-auth-event') {
+    console.error('Admin getRedirectResult error:', err.code);
+    const errEl = document.getElementById('loginError');
+    if (errEl) errEl.textContent = 'Erro ao autenticar. Tente novamente.';
   }
 });
 

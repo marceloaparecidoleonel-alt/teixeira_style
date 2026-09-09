@@ -85,25 +85,53 @@ function updateAuthUI() {
   document.body.classList.remove('auth-loading');
 }
 
-/* ---- Login com Google ---- */
-let _loginInProgress = false;
+/* ---- Login com Google (redirect — compatível com COOP) ---- */
+const _PENDING_KEY = 'ts_pending_action';
+
+function savePendingAction(action) {
+  if (!action) return;
+  try {
+    /* Funções não sobrevivem ao JSON — remove onSuccess antes de serializar */
+    const toSave = { ...action };
+    delete toSave.onSuccess;
+    sessionStorage.setItem(_PENDING_KEY, JSON.stringify(toSave));
+  } catch(e) {}
+}
+
+function restorePendingAction() {
+  try {
+    const raw = sessionStorage.getItem(_PENDING_KEY);
+    if (!raw) return null;
+    sessionStorage.removeItem(_PENDING_KEY);
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
 
 async function signInWithGoogle() {
-  if (_loginInProgress) return;
-  _loginInProgress = true;
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
+  /* Persiste ação pendente antes do redirect */
+  if (window.__pendingCartAction) savePendingAction(window.__pendingCartAction);
   try {
-    await auth.signInWithPopup(provider);
+    await auth.signInWithRedirect(provider);
   } catch (err) {
-    if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-      console.error('Login error:', err.code, err.message);
-    }
-  } finally {
-    _loginInProgress = false;
+    console.error('Login error:', err.code, err.message);
   }
 }
 window.signInWithGoogle = signInWithGoogle;
+
+/* ---- Processa resultado do redirect ao carregar a página ---- */
+auth.getRedirectResult().then(result => {
+  if (result && result.user) {
+    /* Login via redirect concluído — ação pendente será executada pelo onAuthStateChanged */
+    const saved = restorePendingAction();
+    if (saved) window.__pendingCartAction = saved;
+  }
+}).catch(err => {
+  if (err.code !== 'auth/no-auth-event') {
+    console.error('getRedirectResult error:', err.code);
+  }
+});
 
 /* ---- Modal de confirmação de logout ---- */
 function showLogoutModal() {
