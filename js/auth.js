@@ -85,13 +85,13 @@ function updateAuthUI() {
   document.body.classList.remove('auth-loading');
 }
 
-/* ---- Login com Google (redirect — compatível com COOP) ---- */
+/* ---- Login com Google ---- */
 const _PENDING_KEY = 'ts_pending_action';
+const _IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 function savePendingAction(action) {
   if (!action) return;
   try {
-    /* Funções não sobrevivem ao JSON — remove onSuccess antes de serializar */
     const toSave = { ...action };
     delete toSave.onSuccess;
     sessionStorage.setItem(_PENDING_KEY, JSON.stringify(toSave));
@@ -110,28 +110,38 @@ function restorePendingAction() {
 async function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  /* Persiste ação pendente antes do redirect */
   if (window.__pendingCartAction) savePendingAction(window.__pendingCartAction);
   try {
-    await auth.signInWithRedirect(provider);
+    if (_IS_LOCAL) {
+      await auth.signInWithPopup(provider);
+    } else {
+      await auth.signInWithRedirect(provider);
+    }
   } catch (err) {
-    console.error('Login error:', err.code, err.message);
+    if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+      console.error('Login error:', err.code, err.message);
+    }
   }
 }
 window.signInWithGoogle = signInWithGoogle;
 
-/* ---- Processa resultado do redirect ao carregar a página ---- */
-auth.getRedirectResult().then(result => {
-  if (result && result.user) {
-    /* Login via redirect concluído — ação pendente será executada pelo onAuthStateChanged */
-    const saved = restorePendingAction();
-    if (saved) window.__pendingCartAction = saved;
-  }
-}).catch(err => {
-  if (err.code !== 'auth/no-auth-event') {
-    console.error('getRedirectResult error:', err.code);
-  }
-});
+/* ---- Gate: bloqueia onAuthStateChanged até getRedirectResult resolver ---- */
+let _redirectReady;
+if (_IS_LOCAL) {
+  /* Em localhost usamos popup — não há redirect para aguardar */
+  _redirectReady = Promise.resolve();
+} else {
+  _redirectReady = auth.getRedirectResult().then(result => {
+    if (result && result.user) {
+      const saved = restorePendingAction();
+      if (saved) window.__pendingCartAction = saved;
+    }
+  }).catch(err => {
+    if (err.code !== 'auth/no-auth-event') {
+      console.error('getRedirectResult error:', err.code);
+    }
+  });
+}
 
 /* ---- Modal de confirmação de logout ---- */
 function showLogoutModal() {
@@ -188,6 +198,11 @@ async function executePendingCartAction() {
 
 /* ---- Listener de estado de autenticação ---- */
 auth.onAuthStateChanged(async user => {
+  /* Aguarda getRedirectResult resolver antes de processar (produção).
+     Evita o loop infinito onde onAuthStateChanged dispara null
+     antes da sessão de redirect ser commitada. */
+  await _redirectReady;
+
   const previousUser = window.currentUser;
   window.currentUser = user;
   window.__authReady = true;

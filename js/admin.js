@@ -117,14 +117,28 @@ function _showLoginScreen(msg) {
   }
 }
 
+const _ADMIN_IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+/* Gate: em produção aguarda getRedirectResult antes do onAuthStateChanged */
+let _adminRedirectReady;
+if (_ADMIN_IS_LOCAL) {
+  _adminRedirectReady = Promise.resolve();
+} else {
+  _adminRedirectReady = auth.getRedirectResult().catch(err => {
+    if (err.code !== 'auth/no-auth-event') {
+      console.error('Admin getRedirectResult error:', err.code);
+      const errEl = document.getElementById('loginError');
+      if (errEl) errEl.textContent = 'Erro ao autenticar. Tente novamente.';
+    }
+  });
+}
+
 auth.onAuthStateChanged(async user => {
+  await _adminRedirectReady;
   if (user) {
     if (isAdminEmail(user.email)) {
       _showAdminPanel(user);
     } else {
-      /* Não é administrador: mostra tela de login e encerra a sessão.
-         IMPORTANTE: signOut() é chamado FORA do fluxo síncrono do listener
-         para evitar loop onAuthStateChanged → signOut → onAuthStateChanged. */
       _showLoginScreen('Acesso não autorizado para este e-mail.');
       setTimeout(() => auth.signOut(), 0);
     }
@@ -140,19 +154,16 @@ document.getElementById('adminGoogleBtn')?.addEventListener('click', async () =>
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    await auth.signInWithRedirect(provider);
+    if (_ADMIN_IS_LOCAL) {
+      await auth.signInWithPopup(provider);
+    } else {
+      await auth.signInWithRedirect(provider);
+    }
   } catch (err) {
-    console.error('Admin login error:', err.code, err.message);
-    if (errEl) errEl.textContent = 'Erro ao autenticar. Tente novamente.';
-  }
-});
-
-/* Processa retorno do redirect do Google */
-auth.getRedirectResult().catch(err => {
-  if (err.code !== 'auth/no-auth-event') {
-    console.error('Admin getRedirectResult error:', err.code);
-    const errEl = document.getElementById('loginError');
-    if (errEl) errEl.textContent = 'Erro ao autenticar. Tente novamente.';
+    if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+      console.error('Admin login error:', err.code, err.message);
+      if (errEl) errEl.textContent = 'Erro ao autenticar. Tente novamente.';
+    }
   }
 });
 
