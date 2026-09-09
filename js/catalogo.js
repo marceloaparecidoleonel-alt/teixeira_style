@@ -68,10 +68,11 @@ function renderProducts() {
 /* ---- CREATE PRODUCT CARD ---- */
 function createProductCard(product) {
   const catSlug = product.category_slug || (product.category_name ? product.category_name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-') : '');
-  const availabilityClass = product.availability === 'available' ? 'available' : 'unavailable';
-  const availabilityText = product.availability === 'available' ? 'Disponível' : 'Indisponível';
+  const stock = product.stock != null ? product.stock : (product.availability === 'available' ? 1 : 0);
+  const availabilityClass = stock > 0 ? 'available' : 'unavailable';
+  const availabilityText = stock > 0 ? `${stock} un.` : 'Esgotado';
   const price = product.price ? `R$ ${Number(product.price).toFixed(2).replace('.', ',')}` : '';
-  const unavailable = product.availability !== 'available';
+  const unavailable = stock <= 0;
 
   return `
     <article class="product-card" data-cat="${catSlug}" data-name="${product.name}" data-id="${product.id}" onclick="window.location.href='produto.html?id=${product.id}'" style="cursor:pointer">
@@ -141,7 +142,8 @@ async function openProductModal(id, action = 'cart') {
   desc.textContent = p.description || 'Sem descrição.';
   price.textContent = p.price ? `R$ ${Number(p.price).toFixed(2).replace('.', ',')}` : 'Consultar preço';
   if (materialEl) materialEl.textContent = p.material || '100% Algodão Premium';
-  if (availEl) availEl.textContent = p.availability === 'available' ? 'Disponível' : 'Indisponível';
+  const pStock = p.stock != null ? p.stock : (p.availability === 'available' ? 1 : 0);
+  if (availEl) availEl.textContent = pStock > 0 ? `${pStock} un.` : 'Esgotado';
 
   const sizeArr = p.sizes ? p.sizes.split(',').map(s => s.trim()).filter(Boolean) : ['Único'];
   sizes.innerHTML = sizeArr.map(s => `<button type="button" class="modal-size" data-size="${s}">${s}</button>`).join('');
@@ -155,10 +157,11 @@ async function openProductModal(id, action = 'cart') {
 
   const buyBtn = document.getElementById('modalBuyNow');
 
-  if (p.availability !== 'available') {
+  const pStockVal = p.stock != null ? p.stock : (p.availability === 'available' ? 1 : 0);
+  if (pStockVal <= 0) {
     addBtn.disabled = true;
-    addBtn.textContent = 'Indisponível';
-    if (buyBtn) { buyBtn.disabled = true; buyBtn.textContent = 'Indisponível'; }
+    addBtn.textContent = 'Esgotado';
+    if (buyBtn) { buyBtn.disabled = true; buyBtn.textContent = 'Esgotado'; }
   } else {
     addBtn.disabled = false;
     addBtn.textContent = 'Adicionar ao carrinho';
@@ -183,7 +186,8 @@ function getSelectedSize() {
 }
 
 document.getElementById('modalAddToCart')?.addEventListener('click', () => {
-  if (!currentModalProduct || currentModalProduct.availability !== 'available') return;
+  const _cStock = currentModalProduct.stock != null ? currentModalProduct.stock : (currentModalProduct.availability === 'available' ? 1 : 0);
+  if (!currentModalProduct || _cStock <= 0) return;
   if (!window.currentUser) {
     /* Salva a ação para ser executada automaticamente após o login */
     window.__pendingCartAction = {
@@ -201,7 +205,8 @@ document.getElementById('modalAddToCart')?.addEventListener('click', () => {
 });
 
 document.getElementById('modalBuyNow')?.addEventListener('click', () => {
-  if (!currentModalProduct || currentModalProduct.availability !== 'available') return;
+  const _bStock = currentModalProduct.stock != null ? currentModalProduct.stock : (currentModalProduct.availability === 'available' ? 1 : 0);
+  if (!currentModalProduct || _bStock <= 0) return;
   if (!window.currentUser) {
     window.__pendingCartAction = {
       type: 'buyNow',

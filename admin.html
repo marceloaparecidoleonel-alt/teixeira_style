@@ -588,8 +588,8 @@
             <p id="imgUploadStatus" style="display:none;font-size:0.82rem;margin-top:0.4rem;color:#C9A66B"></p>
           </div>
           <div class="form-group">
-            <label class="form-label">Disponibilidade</label>
-            <select class="form-input" id="modalProductAvail"><option value="available">Disponível</option><option value="unavailable">Indisponível</option></select>
+            <label class="form-label">Estoque <small style="color:var(--text-dim);font-weight:400">(0 = indisponível)</small></label>
+            <input type="number" class="form-input" id="modalProductStock" min="0" step="1" value="10" placeholder="Ex: 10" />
           </div>
         </div>
         <div class="modal__footer">

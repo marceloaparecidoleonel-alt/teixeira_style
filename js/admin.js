@@ -322,8 +322,9 @@ async function loadDashboard() {
     } else {
       topProdEl.innerHTML = sorted.map((doc, i) => {
         const p = doc.data();
-        const avail = p.availability === 'available' ? 'Disponível' : 'Indisponível';
-        const badgeClass = p.availability === 'available' ? 'success' : 'danger';
+        const stock = p.stock != null ? p.stock : (p.availability === 'available' ? 1 : 0);
+        const avail = stock > 0 ? `${stock} un.` : 'Indisponível';
+        const badgeClass = stock > 0 ? 'success' : 'danger';
         return `<div class="top-product">
           <div class="top-product__rank">${i + 1}</div>
           <div class="top-product__info">
@@ -451,7 +452,7 @@ function renderProductsTable(products) {
       </td>
       <td>${p.category_name || '-'}</td>
       <td>${p.reference_code || '-'}</td>
-      <td><span class="badge badge--${p.availability === 'available' ? 'success' : 'danger'}">${p.availability === 'available' ? 'Disponível' : 'Indisponível'}</span></td>
+      <td><span class="badge badge--${(p.stock != null ? p.stock : (p.availability === 'available' ? 1 : 0)) > 0 ? 'success' : 'danger'}">${p.stock != null ? (p.stock > 0 ? p.stock + ' un.' : 'Esgotado') : (p.availability === 'available' ? 'Disponível' : 'Indisponível')}</span></td>
       <td>
         <div class="action-btns">
           <button class="action-btn action-btn--edit" onclick="openEditProduct('${p.id}')" title="Editar">✏️</button>
@@ -658,7 +659,7 @@ async function openEditProduct(id) {
     document.getElementById('modalProductRef').value   = p.reference_code || '';
     document.getElementById('modalProductPrice').value = p.price != null ? p.price : '';
     document.getElementById('modalProductDesc').value  = p.description || '';
-    document.getElementById('modalProductAvail').value = p.availability || 'available';
+    document.getElementById('modalProductStock').value = p.stock != null ? p.stock : (p.availability === 'available' ? 10 : 0);
     setSelectedSizes(p.sizes || '');
     /* Carrega URLs existentes: prioriza array images[], fallback image_url */
     const urls = Array.isArray(p.images) && p.images.length ? p.images : (p.image_url ? [p.image_url] : []);
@@ -684,7 +685,8 @@ document.getElementById('productForm')?.addEventListener('submit', async e => {
   const ref   = document.getElementById('modalProductRef').value.trim();
   const price = parseFloat(document.getElementById('modalProductPrice').value);
   const desc  = document.getElementById('modalProductDesc').value.trim();
-  const avail = document.getElementById('modalProductAvail').value;
+  const stock = Math.max(0, parseInt(document.getElementById('modalProductStock').value, 10) || 0);
+  const avail = stock > 0 ? 'available' : 'unavailable';
   const catId = document.getElementById('modalCatSelect').value;
 
   /* Validações dos campos */
@@ -742,7 +744,7 @@ document.getElementById('productForm')?.addEventListener('submit', async e => {
 
     const data = {
       name, slug: makeSlug(name), reference_code: ref, price,
-      description: desc, sizes: getSelectedSizes(), availability: avail,
+      description: desc, sizes: getSelectedSizes(), availability: avail, stock,
       status: 'active', category_id: catId, category_name: catName,
       category_slug: catSlug,
       image_url: imageUrl,       /* campo principal — compat. com catálogo */

@@ -41,7 +41,8 @@ async function loadProduct() {
 
 /* --- Render --- */
 function renderProduct(p) {
-  const available = p.availability === 'available';
+  const stockQty = p.stock != null ? p.stock : (p.availability === 'available' ? 1 : 0);
+  const available = stockQty > 0;
 
   document.title = `${p.name} — Teixeira Style`;
 
@@ -85,7 +86,7 @@ function renderProduct(p) {
     : 'Consultar preço';
 
   document.getElementById('produtoMaterial').textContent = p.material || '100% Algodão';
-  document.getElementById('produtoAvail').textContent = available ? 'Disponível' : 'Indisponível';
+  document.getElementById('produtoAvail').textContent = available ? `${stockQty} un.` : 'Esgotado';
 
   /* Sizes */
   const sizesEl = document.getElementById('produtoSizes');
