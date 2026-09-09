@@ -141,41 +141,66 @@ function getSize() {
   return sel ? sel.dataset.size : 'Único';
 }
 
+/* --- Helper: pede login se necessário --- */
+function requireLogin(pendingAction) {
+  window.__pendingCartAction = pendingAction;
+  /* Tenta abrir o popup de login */
+  if (typeof signInWithGoogle === 'function') {
+    signInWithGoogle();
+  }
+  /* Mensagem visual */
+  showToast('Faça login para continuar');
+  /* Destaca o botão de login na navbar */
+  const authBtn = document.querySelector('.auth-btn');
+  if (authBtn) {
+    authBtn.style.outline = '2px solid #C9A66B';
+    authBtn.style.borderRadius = '4px';
+    setTimeout(() => { authBtn.style.outline = ''; }, 2500);
+    authBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+/* --- Aguarda auth estar pronto e executa a ação --- */
+function whenAuthReady(fn) {
+  if (window.__authReady) { fn(); return; }
+  const iv = setInterval(() => {
+    if (window.__authReady) { clearInterval(iv); fn(); }
+  }, 80);
+  setTimeout(() => clearInterval(iv), 5000);
+}
+
 /* --- Buy now --- */
 document.getElementById('produtoBuyNow')?.addEventListener('click', () => {
   if (!currentProduct) return;
-  if (!window.currentUser) {
-    /* Salva a ação para ser executada automaticamente após o login */
-    window.__pendingCartAction = {
-      type: 'buyNow',
-      product: currentProduct,
-      size: getSize(),
-      qty: currentQty
-    };
-    if (typeof signInWithGoogle === 'function') signInWithGoogle();
-    return;
-  }
-  if (typeof addToCart === 'function') addToCart(currentProduct, getSize(), currentQty);
-  window.location.href = 'checkout.html';
+  const size = getSize();
+  whenAuthReady(() => {
+    if (!window.currentUser) {
+      requireLogin({ type: 'buyNow', product: currentProduct, size, qty: currentQty });
+      return;
+    }
+    if (typeof addToCart === 'function') addToCart(currentProduct, size, currentQty);
+    window.location.href = 'checkout.html';
+  });
 });
 
 /* --- Add to cart --- */
 document.getElementById('produtoAddCart')?.addEventListener('click', () => {
   if (!currentProduct) return;
-  if (!window.currentUser) {
-    /* Salva a ação para ser executada automaticamente após o login */
-    window.__pendingCartAction = {
-      type: 'addToCart',
-      product: currentProduct,
-      size: getSize(),
-      qty: currentQty,
-      onSuccess: () => showToast('Produto adicionado ao carrinho!')
-    };
-    if (typeof signInWithGoogle === 'function') signInWithGoogle();
-    return;
-  }
-  if (typeof addToCart === 'function') addToCart(currentProduct, getSize(), currentQty);
-  showToast('Produto adicionado ao carrinho!');
+  const size = getSize();
+  whenAuthReady(() => {
+    if (!window.currentUser) {
+      requireLogin({
+        type: 'addToCart',
+        product: currentProduct,
+        size,
+        qty: currentQty,
+        onSuccess: () => showToast('Produto adicionado ao carrinho!')
+      });
+      return;
+    }
+    if (typeof addToCart === 'function') addToCart(currentProduct, size, currentQty);
+    showToast('Produto adicionado ao carrinho!');
+  });
 });
 
 /* --- Init --- */
