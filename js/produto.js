@@ -6,6 +6,7 @@
 
 let currentProduct = null;
 let currentQty = 1;
+let currentStock = 0;
 
 /* --- Helpers --- */
 function getParam(key) {
@@ -43,6 +44,10 @@ async function loadProduct() {
 function renderProduct(p) {
   const stockQty = p.stock != null ? p.stock : (p.availability === 'available' ? 1 : 0);
   const available = stockQty > 0;
+  currentStock = stockQty;
+  currentQty = 1;
+  const qtyVal = document.getElementById('qtyVal');
+  if (qtyVal) qtyVal.textContent = '1';
 
   document.title = `${p.name} — Teixeira Style`;
 
@@ -122,6 +127,10 @@ document.getElementById('qtyMinus')?.addEventListener('click', () => {
   if (currentQty > 1) { currentQty--; document.getElementById('qtyVal').textContent = currentQty; }
 });
 document.getElementById('qtyPlus')?.addEventListener('click', () => {
+  if (currentStock > 0 && currentQty >= currentStock) {
+    showToast(`Estoque máximo: ${currentStock} un.`);
+    return;
+  }
   currentQty++;
   document.getElementById('qtyVal').textContent = currentQty;
 });
