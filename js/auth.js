@@ -85,9 +85,8 @@ function updateAuthUI() {
   document.body.classList.remove('auth-loading');
 }
 
-/* ---- Login com Google ---- */
+/* ---- Login com Google (popup — funciona em localhost e produção) ---- */
 const _PENDING_KEY = 'ts_pending_action';
-const _IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 function savePendingAction(action) {
   if (!action) return;
@@ -107,41 +106,37 @@ function restorePendingAction() {
   } catch(e) { return null; }
 }
 
+let _loginInProgress = false;
 async function signInWithGoogle() {
+  if (_loginInProgress) return;
+  _loginInProgress = true;
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  if (window.__pendingCartAction) savePendingAction(window.__pendingCartAction);
   try {
-    if (_IS_LOCAL) {
-      await auth.signInWithPopup(provider);
-    } else {
-      await auth.signInWithRedirect(provider);
-    }
+    await auth.signInWithPopup(provider);
   } catch (err) {
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
       console.error('Login error:', err.code, err.message);
     }
+  } finally {
+    _loginInProgress = false;
   }
 }
 window.signInWithGoogle = signInWithGoogle;
 
-/* ---- Gate: bloqueia onAuthStateChanged até getRedirectResult resolver ---- */
-let _redirectReady;
-if (_IS_LOCAL) {
-  /* Em localhost usamos popup — não há redirect para aguardar */
-  _redirectReady = Promise.resolve();
-} else {
-  _redirectReady = auth.getRedirectResult().then(result => {
-    if (result && result.user) {
-      const saved = restorePendingAction();
-      if (saved) window.__pendingCartAction = saved;
-    }
-  }).catch(err => {
-    if (err.code !== 'auth/no-auth-event') {
-      console.error('getRedirectResult error:', err.code);
-    }
-  });
-}
+/* Restaura ação pendente caso venha de um redirect antigo (sem bloquear nada) */
+auth.getRedirectResult().then(result => {
+  if (result && result.user) {
+    const saved = restorePendingAction();
+    if (saved) window.__pendingCartAction = saved;
+  }
+}).catch(() => { /* sem-op */ });
+
+/* Timeout de segurança: remove auth-loading após 4s máximo */
+setTimeout(() => {
+  document.body.classList.remove('auth-loading');
+  window.__authReady = true;
+}, 4000);
 
 /* ---- Modal de confirmação de logout ---- */
 function showLogoutModal() {
@@ -198,11 +193,6 @@ async function executePendingCartAction() {
 
 /* ---- Listener de estado de autenticação ---- */
 auth.onAuthStateChanged(async user => {
-  /* Aguarda getRedirectResult resolver antes de processar (produção).
-     Evita o loop infinito onde onAuthStateChanged dispara null
-     antes da sessão de redirect ser commitada. */
-  await _redirectReady;
-
   const previousUser = window.currentUser;
   window.currentUser = user;
   window.__authReady = true;
