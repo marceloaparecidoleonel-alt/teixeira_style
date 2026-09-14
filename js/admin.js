@@ -1407,79 +1407,86 @@ async function deleteGalleryItem(id) {
 /* ============================================================
    ORDERS
    ============================================================ */
-async function loadOrders() {
+const STATUS_COLOR = {
+  aguardando_confirmacao: '#888',
+  aguardando_pagamento:   '#e0a800',
+  pago:                   '#27ae60',
+  enviado:                '#2980b9',
+  entregue:               '#8e44ad',
+  cancelado:              '#e74c3c'
+};
+const STATUS_LABEL = {
+  aguardando_confirmacao: 'Aguardando confirmação',
+  aguardando_pagamento:   'Aguardando pagamento',
+  pago:                   '✅ Pago',
+  enviado:                '🚚 Enviado',
+  entregue:               '📦 Entregue',
+  cancelado:              '❌ Cancelado'
+};
+
+let _ordersUnsubscribe = null;
+
+function renderOrdersTable(docs) {
+  const tbody = document.getElementById('ordersBody');
+  if (!tbody) return;
+  if (!docs.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888">Nenhum pedido</td></tr>';
+    return;
+  }
+  tbody.innerHTML = docs.map(doc => {
+    const o  = doc.data();
+    const d  = o.created_at ? new Date(o.created_at.seconds * 1000).toLocaleDateString('pt-BR') : '-';
+    const payLabel = { whatsapp: 'WhatsApp', pix: 'PIX', mercadopago: 'Mercado Pago' }[o.payment] || o.payment || '-';
+    const st = o.status || 'aguardando_pagamento';
+    const bc = STATUS_COLOR[st] || '#888';
+    const bl = STATUS_LABEL[st] || st;
+    return `<tr data-order-id="${doc.id}">
+      <td>#${doc.id.slice(-6)}</td>
+      <td>${o.full_name || o.user_name || '-'}</td>
+      <td>${o.whatsapp || '-'}</td>
+      <td>R$ ${Number(o.total || 0).toFixed(2).replace('.', ',')}</td>
+      <td>${payLabel}</td>
+      <td>
+        <span class="order-status-badge" style="display:inline-block;padding:3px 10px;border-radius:4px;font-size:0.75rem;font-weight:600;background:${bc}22;color:${bc};border:1px solid ${bc}55;white-space:nowrap">${bl}</span>
+        <br>
+        <select class="status-select" data-id="${doc.id}" style="font-size:0.75rem;margin-top:4px">
+          <option value="aguardando_confirmacao" ${st==='aguardando_confirmacao'?'selected':''}>Aguardando confirmação</option>
+          <option value="aguardando_pagamento"   ${st==='aguardando_pagamento'?'selected':''}>Aguardando pagamento</option>
+          <option value="pago"      ${st==='pago'?'selected':''}>Pago</option>
+          <option value="enviado"   ${st==='enviado'?'selected':''}>Enviado</option>
+          <option value="entregue"  ${st==='entregue'?'selected':''}>Entregue</option>
+          <option value="cancelado" ${st==='cancelado'?'selected':''}>Cancelado</option>
+        </select>
+      </td>
+      <td>${d}</td>
+      <td><button class="action-btn" onclick="window.open('https://wa.me/${String(o.whatsapp||'').replace(/\D/g,'')}','_blank')">WhatsApp</button></td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('.status-select').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      try {
+        await db.collection('orders').doc(sel.dataset.id).update({ status: sel.value, updated_at: firebase.firestore.FieldValue.serverTimestamp() });
+        showToast('Status atualizado!');
+      } catch { showToast('Erro ao atualizar status.', 'error'); }
+    });
+  });
+}
+
+function loadOrders() {
   const tbody = document.getElementById('ordersBody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">Carregando...</td></tr>';
-  try {
-    const snap = await db.collection('orders').orderBy('created_at', 'desc').get();
-    if (snap.empty) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888">Nenhum pedido</td></tr>';
-      return;
-    }
-    const statusColor = {
-      aguardando_confirmacao: '#888',
-      aguardando_pagamento:   '#e0a800',
-      pago:                   '#27ae60',
-      enviado:                '#2980b9',
-      entregue:               '#8e44ad',
-      cancelado:              '#e74c3c'
-    };
-    const statusLabel = {
-      aguardando_confirmacao: 'Aguardando confirmação',
-      aguardando_pagamento:   'Aguardando pagamento',
-      pago:                   '✅ Pago',
-      enviado:                '🚚 Enviado',
-      entregue:               '📦 Entregue',
-      cancelado:              '❌ Cancelado'
-    };
-    tbody.innerHTML = snap.docs.map(doc => {
-      const o = doc.data();
-      const d = o.created_at ? new Date(o.created_at.seconds * 1000).toLocaleDateString('pt-BR') : '-';
-      const payLabel = { whatsapp: 'WhatsApp', pix: 'PIX', mercadopago: 'Mercado Pago' }[o.payment] || o.payment || '-';
-      const st = o.status || 'aguardando_pagamento';
-      const badgeColor = statusColor[st] || '#888';
-      const badgeLabel = statusLabel[st] || st;
-      return `<tr>
-        <td>#${doc.id.slice(-6)}</td>
-        <td>${o.full_name || o.user_name || '-'}</td>
-        <td>${o.whatsapp || '-'}</td>
-        <td>R$ ${Number(o.total || 0).toFixed(2).replace('.', ',')}</td>
-        <td>${payLabel}</td>
-        <td>
-          <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;background:${badgeColor}22;color:${badgeColor};border:1px solid ${badgeColor}55;margin-bottom:4px;white-space:nowrap">${badgeLabel}</span><br>
-          <select class="status-select" data-id="${doc.id}" style="font-size:0.75rem;margin-top:2px">
-            <option value="aguardando_confirmacao" ${st==='aguardando_confirmacao'?'selected':''}>Aguardando confirmação</option>
-            <option value="aguardando_pagamento"   ${st==='aguardando_pagamento'?'selected':''}>Aguardando pagamento</option>
-            <option value="pago"      ${st==='pago'?'selected':''}>Pago</option>
-            <option value="enviado"   ${st==='enviado'?'selected':''}>Enviado</option>
-            <option value="entregue"  ${st==='entregue'?'selected':''}>Entregue</option>
-            <option value="cancelado" ${st==='cancelado'?'selected':''}>Cancelado</option>
-          </select>
-        </td>
-        <td>${d}</td>
-        <td><button class="action-btn" onclick="window.open('https://wa.me/${String(o.whatsapp||'').replace(/\D/g,'')}','_blank')">WhatsApp</button></td>
-      </tr>`;
-    }).join('');
 
-    tbody.querySelectorAll('.status-select').forEach(sel => {
-      sel.addEventListener('change', async () => {
-        try {
-          await db.collection('orders').doc(sel.dataset.id).update({ status: sel.value, updated_at: firebase.firestore.FieldValue.serverTimestamp() });
-          showToast('Status atualizado!');
-          const badge = sel.closest('td').querySelector('span');
-          if (badge) {
-            const c = statusColor[sel.value] || '#888';
-            const l = statusLabel[sel.value] || sel.value;
-            badge.textContent = l;
-            badge.style.background = c + '22';
-            badge.style.color = c;
-            badge.style.borderColor = c + '55';
-          }
-        } catch { showToast('Erro ao atualizar status.', 'error'); }
-      });
+  if (_ordersUnsubscribe) { _ordersUnsubscribe(); _ordersUnsubscribe = null; }
+
+  _ordersUnsubscribe = db.collection('orders')
+    .orderBy('created_at', 'desc')
+    .onSnapshot(snap => {
+      renderOrdersTable(snap.docs);
+    }, () => {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#e74c3c">Erro ao carregar pedidos</td></tr>';
     });
-  } catch { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#e74c3c">Erro</td></tr>'; }
 }
 
 /* ============================================================
