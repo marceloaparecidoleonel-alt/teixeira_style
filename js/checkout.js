@@ -2,7 +2,8 @@
    TEIXEIRA STYLE — Checkout (PIX via Mercado Pago)
    ============================================================ */
 
-const db = window.fbDb;
+/* db é declarado por cart.js no mesmo escopo global — não redeclarar */
+const _checkoutDb = window.fbDb;
 const API_BASE = '';  /* mesmo domínio — Vercel serverless */
 
 /* ---- Estado da sessão de pagamento ---- */
@@ -179,7 +180,7 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
         alert(`Quantidade inválida para o produto "${item.name}".`);
         btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
       }
-      const snap = await db.collection('products').doc(item.id).get();
+      const snap = await _checkoutDb.collection('products').doc(item.id).get();
       if (!snap.exists) {
         alert(`Produto "${item.name}" não encontrado. Remova-o do carrinho e tente novamente.`);
         btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
@@ -235,12 +236,12 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
   btn.textContent = 'Gerando PIX...';
 
   try {
-    const docRef = await db.collection('orders').add(order);
+    const docRef = await _checkoutDb.collection('orders').add(order);
     _orderId    = docRef.id;
     _orderItems = cart;
     _orderTotal = total;
 
-    db.collection('activity_logs').add({
+    _checkoutDb.collection('activity_logs').add({
       type:        'pedido_recebido',
       description: `Novo pedido <strong>#${_orderId.slice(-6)}</strong> de ${fullName}`,
       color:       'green',
@@ -281,7 +282,7 @@ async function initPixPayment(order, cart) {
     const data = await res.json();
     _paymentId = data.paymentId;
 
-    await db.collection('orders').doc(_orderId).update({
+    await _checkoutDb.collection('orders').doc(_orderId).update({
       mercadopagoPaymentId: String(_paymentId),
       externalReference:    _orderId,
       total:                data.total  /* total confirmado pelo backend */
@@ -407,7 +408,7 @@ function updatePixStatusUI(status) {
 
     /* Atualiza Firestore */
     if (_orderId) {
-      db.collection('orders').doc(_orderId).update({
+      _checkoutDb.collection('orders').doc(_orderId).update({
         status:        'pago',
         paymentStatus: 'approved',
         paidAt:        new Date().toISOString()
@@ -431,7 +432,7 @@ function updatePixStatusUI(status) {
       statusEl.className   = 'pix-status pix-status--rejected';
     }
     if (_orderId) {
-      db.collection('orders').doc(_orderId).update({
+      _checkoutDb.collection('orders').doc(_orderId).update({
         status:        'cancelado',
         paymentStatus: status
       }).catch(() => {});
@@ -451,7 +452,7 @@ function updatePixStatusUI(status) {
 async function buildWaLink(waBtn) {
   let waNum = '5543996019761'; /* fallback */
   try {
-    const cfgSnap = await db.collection('store_settings').doc('main').get();
+    const cfgSnap = await _checkoutDb.collection('store_settings').doc('main').get();
     if (cfgSnap.exists && cfgSnap.data().whatsapp) {
       waNum = String(cfgSnap.data().whatsapp).replace(/\D/g, '');
     }
@@ -480,7 +481,7 @@ async function buildWaLink(waBtn) {
 
   waBtn.href = `https://wa.me/${waNum}?text=${msg}`;
   waBtn.addEventListener('click', () => {
-    if (_orderId) db.collection('orders').doc(_orderId).update({ whatsappConfirmed: true }).catch(() => {});
+    if (_orderId) _checkoutDb.collection('orders').doc(_orderId).update({ whatsappConfirmed: true }).catch(() => {});
     clearSession();
   }, { once: true });
 }
