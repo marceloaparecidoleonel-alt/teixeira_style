@@ -109,6 +109,7 @@ async function loadCartFromFirestore() {
     }
     if (typeof updateCartCount === 'function') updateCartCount();
     if (typeof renderCart === 'function') renderCart();
+    window.dispatchEvent(new CustomEvent('cartLoaded'));
   } catch (e) { console.error('Load cart error:', e); }
 }
 

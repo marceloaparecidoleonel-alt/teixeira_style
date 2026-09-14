@@ -90,29 +90,46 @@ function clearSession() {
 /* ============================================================
    VALIDAÇÃO DOS CAMPOS
    ============================================================ */
+function highlightField(id, ok) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.borderColor = ok ? '' : '#e74c3c';
+  el.style.boxShadow  = ok ? '' : '0 0 0 2px rgba(231,76,60,0.25)';
+}
+
 function validateFields() {
   const fields = [
-    { id: 'fullName',  label: 'Nome completo' },
-    { id: 'whatsapp',  label: 'WhatsApp' },
-    { id: 'cep',       label: 'CEP' },
-    { id: 'city',      label: 'Cidade' },
-    { id: 'estado',    label: 'Estado' },
-    { id: 'address',   label: 'Endereço' },
-    { id: 'numero',    label: 'Número' }
+    { id: 'fullName',    label: 'Nome completo' },
+    { id: 'whatsapp',   label: 'WhatsApp' },
+    { id: 'cep',        label: 'CEP' },
+    { id: 'city',       label: 'Cidade' },
+    { id: 'estado',     label: 'Estado' },
+    { id: 'address',    label: 'Endereço' },
+    { id: 'numero',     label: 'Número' },
+    { id: 'complemento', label: 'Complemento (escreva "Sem complemento" se não houver)' }
   ];
+
+  /* Limpa destaques anteriores */
+  fields.forEach(f => highlightField(f.id, true));
+
   const missing = fields.filter(f => {
     const el = document.getElementById(f.id);
     return !el || !el.value.trim();
   });
+
   if (missing.length) {
-    const names = missing.map(f => f.label).join(', ');
-    alert(`Preencha os campos obrigatórios: ${names}`);
+    /* Destaca cada campo vazio */
+    missing.forEach(f => highlightField(f.id, false));
+    const names = missing.map(f => f.label).join('\n• ');
+    alert(`Preencha os campos obrigatórios:\n\n• ${names}`);
     document.getElementById(missing[0].id)?.focus();
     return false;
   }
+
   const cepVal = document.getElementById('cep').value.replace(/\D/g, '');
   if (cepVal.length !== 8) {
-    alert('CEP inválido. Digite 8 números.');
+    highlightField('cep', false);
+    alert('CEP inválido. Digite os 8 números do CEP.');
     document.getElementById('cep').focus();
     return false;
   }
@@ -158,7 +175,7 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
   const estado      = document.getElementById('estado').value.trim();
   const address     = document.getElementById('address').value.trim();
   const numero      = document.getElementById('numero').value.trim();
-  const complemento = document.getElementById('complemento')?.value.trim() || '';
+  const complemento = document.getElementById('complemento').value.trim();
 
   const order = {
     user_id:         window.currentUser.uid,
@@ -464,6 +481,13 @@ function tryRestoreSession() {
 
 /* ============================================================
    INIT — aguarda carrinho + auth antes de renderizar
+
+   CAUSA RAIZ DO R$ 0,00 (CORRIGIDA):
+   auth.js chama loadCartFromFirestore() pelo nome local da função
+   (escopo de script), não via window.loadCartFromFirestore.
+   Sobrescrever window.loadCartFromFirestore no checkout.js era ineficaz.
+   Solução: cart.js dispara o evento 'cartLoaded' após carregar o Firestore.
+   checkout.js escuta esse evento para re-renderizar o resumo.
    ============================================================ */
 function initCheckout() {
   /* Tenta restaurar sessão de pagamento em andamento */
@@ -475,26 +499,26 @@ function initCheckout() {
   if (cepEl)   maskCep(cepEl);
   if (phoneEl) maskPhone(phoneEl);
 
-  /* Renderiza resumo imediatamente com o que há no localStorage */
+  /* 1ª renderização: dados que já estão no localStorage (usuário com sessão ativa) */
   renderSummary();
 
-  /* Re-renderiza após loadCartFromFirestore (auth.js chama isso após login) */
-  const _origLoad = window.loadCartFromFirestore;
-  if (typeof _origLoad === 'function') {
-    window.loadCartFromFirestore = async function() {
-      await _origLoad.apply(this, arguments);
-      renderSummary();
-    };
-  }
+  /* Escuta o evento disparado por cart.js após loadCartFromFirestore completar.
+     Esta é a solução real: auth.js chama loadCartFromFirestore() pelo escopo
+     local — sobrescrever window.loadCartFromFirestore era ignorado. */
+  window.addEventListener('cartLoaded', () => {
+    renderSummary();
+  });
 
-  /* Garante re-render quando auth resolver e carrinho for carregado */
-  const authCheckInterval = setInterval(() => {
+  /* Fallback: se o usuário já estava logado e o carrinho já estava
+     no localStorage antes do script carregar, renderiza após auth resolver */
+  const authPoll = setInterval(() => {
     if (window.__authReady) {
-      clearInterval(authCheckInterval);
+      clearInterval(authPoll);
       renderSummary();
     }
-  }, 100);
-  setTimeout(() => { clearInterval(authCheckInterval); renderSummary(); }, 6000);
+  }, 150);
+  /* Timeout máximo de segurança — garante render mesmo em erros de rede */
+  setTimeout(() => { clearInterval(authPoll); renderSummary(); }, 7000);
 }
 
 initCheckout();
