@@ -4,7 +4,11 @@
 
 /* db é declarado por cart.js no mesmo escopo global — não redeclarar */
 const _checkoutDb = window.fbDb;
-const API_BASE = '';  /* mesmo domínio — Vercel serverless */
+/* Em localhost o Live Server (porta 5500) não processa /api — redireciona para o
+   Express local na porta 3000. Em produção (Vercel) usa mesmo domínio. */
+const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:3000'
+  : '';
 
 /* ---- Estado da sessão de pagamento ---- */
 let _orderId      = null;

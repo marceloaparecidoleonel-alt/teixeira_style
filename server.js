@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -22,6 +23,10 @@ app.use('/api/categories', require('./routes/categories'));
 app.use('/api/contacts',   require('./routes/contacts'));
 app.use('/api/gallery',    require('./routes/gallery'));
 */
+
+/* Mercado Pago serverless functions — adaptadas para Express local */
+app.post('/api/mp-create-payment', require('./api/mp-create-payment'));
+app.get('/api/mp-payment-status',  require('./api/mp-payment-status'));
 
 // Serve frontend pages
 app.get('/', (req, res) => {
