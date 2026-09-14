@@ -21,14 +21,16 @@ async function loadOrders() {
     listEl.innerHTML = snap.docs.map(doc => {
       const o = doc.data();
       const d = o.created_at ? new Date(o.created_at.seconds * 1000).toLocaleDateString('pt-BR') : '-';
-      const status = { aguardando_confirmacao: 'Aguardando confirmação', aguardando_pagamento: 'Aguardando pagamento', pago: 'Pago', enviado: 'Enviado', entregue: 'Entregue' }[o.status] || o.status;
+      const statusMap = { aguardando_confirmacao: 'Aguardando confirmação', aguardando_pagamento: 'Aguardando pagamento PIX', pago: '✅ Pago', cancelado: '❌ Cancelado', reembolsado: 'Reembolsado', enviado: 'Enviado', entregue: 'Entregue' };
+      const status = statusMap[o.status] || o.status;
+      const payLabel = o.payment === 'pix' ? 'PIX' : 'WhatsApp';
       return `
         <div class="order-card">
           <div class="order-card__header">
             <span class="order-card__id">#${doc.id.slice(-6)}</span>
             <span class="order-card__status order-card__status--${o.status}">${status}</span>
           </div>
-          <div class="order-card__meta"><span>${d}</span><span>${o.payment === 'pix' ? 'PIX' : 'WhatsApp'}</span></div>
+          <div class="order-card__meta"><span>${d}</span><span>${payLabel}</span></div>
           <div class="order-card__items">
             ${o.items.map(i => `<p>• ${i.qty}x ${i.name} (${i.size})</p>`).join('')}
           </div>
