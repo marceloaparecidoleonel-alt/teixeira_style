@@ -3,60 +3,127 @@
    ============================================================ */
 
 const db = window.fbDb;
+const API_BASE = '';  /* mesmo domínio — Vercel serverless */
 
-/* ---- Estado global do checkout ---- */
+/* ---- Estado da sessão de pagamento ---- */
 let _orderId      = null;
 let _paymentId    = null;
 let _pollInterval = null;
 let _orderItems   = null;
 let _orderTotal   = 0;
 
-/* ---- Detecta se está rodando local ou em produção ---- */
-const _IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE  = _IS_LOCAL ? '' : '';  /* mesmo domínio em ambos os casos */
+/* Chave de sessão para persistência durante reload */
+const _SESSION_KEY = 'ts_checkout_session';
 
 /* ============================================================
-   RENDERIZAR RESUMO DO CARRINHO
+   RESUMO DO CARRINHO
+   CAUSA DO R$ 0,00: renderSummary() era chamado imediatamente,
+   antes de loadCartFromFirestore() completar. Agora é chamado
+   somente quando o carrinho já está carregado.
    ============================================================ */
-const itemsEl = document.getElementById('checkoutItems');
-const totalEl = document.getElementById('totalPrice');
-
 function renderSummary() {
+  const itemsEl = document.getElementById('checkoutItems');
+  const totalEl = document.getElementById('totalPrice');
+  if (!itemsEl || !totalEl) return;
+
   const cart = getCart();
   if (!cart.length) {
-    if (itemsEl) itemsEl.innerHTML = '<p style="color:#888">Carrinho vazio.</p>';
-    if (totalEl) totalEl.textContent = 'R$ 0,00';
+    itemsEl.innerHTML = '<p style="color:#888;font-size:.9rem">Carrinho vazio.</p>';
+    totalEl.textContent = 'R$ 0,00';
     return;
   }
-  if (itemsEl) {
-    itemsEl.innerHTML = cart.map(item => `
+
+  itemsEl.innerHTML = cart.map(item => {
+    const price    = parseFloat(item.price)   || 0;
+    const qty      = parseInt(item.qty, 10)   || 1;
+    const subtotal = price * qty;
+    return `
       <div class="checkout-item">
-        <span>${item.qty}x ${item.name} (${item.size})</span>
-        <span>R$ ${(item.price * item.qty).toFixed(2).replace('.', ',')}</span>
-      </div>
-    `).join('');
-  }
-  if (totalEl) totalEl.textContent = `R$ ${cartTotal().toFixed(2).replace('.', ',')}`;
+        <span>${qty}x ${item.name}${item.size ? ' (' + item.size + ')' : ''}</span>
+        <span>R$\u00a0${subtotal.toFixed(2).replace('.', ',')}</span>
+      </div>`;
+  }).join('');
+
+  /* cartTotal() soma price*qty de cada item — fonte única de verdade */
+  totalEl.textContent = `R$\u00a0${cartTotal().toFixed(2).replace('.', ',')}`;
 }
 
-/* ---- Mostra/oculta info do WhatsApp conforme método selecionado ---- */
-document.querySelectorAll('input[name="payment"]').forEach(radio => {
-  radio.addEventListener('change', () => {
-    const infoBox  = document.getElementById('whatsappInfoBox');
-    const note     = document.getElementById('checkoutNote');
-    const isWa     = radio.value === 'whatsapp';
-    if (infoBox) infoBox.style.display = isWa ? '' : 'none';
-    if (note)    note.textContent = isWa
-      ? 'Ao finalizar, você será redirecionado ao WhatsApp.'
-      : 'Pagamento via PIX — QR Code gerado após confirmar.';
+/* ============================================================
+   MÁSCARAS
+   ============================================================ */
+function maskCep(el) {
+  el.addEventListener('input', () => {
+    let v = el.value.replace(/\D/g, '').slice(0, 8);
+    if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5);
+    el.value = v;
   });
-});
+}
+
+function maskPhone(el) {
+  el.addEventListener('input', () => {
+    let v = el.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 10) {
+      v = '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+    } else if (v.length > 6) {
+      v = '(' + v.slice(0,2) + ') ' + v.slice(2,6) + '-' + v.slice(6);
+    } else if (v.length > 2) {
+      v = '(' + v.slice(0,2) + ') ' + v.slice(2);
+    }
+    el.value = v;
+  });
+}
+
+/* ============================================================
+   PERSISTÊNCIA DE SESSÃO DE PAGAMENTO
+   Evita perder o pedido/QR Code ao recarregar a página
+   ============================================================ */
+function saveSession(data) {
+  try { sessionStorage.setItem(_SESSION_KEY, JSON.stringify(data)); } catch(e) {}
+}
+function loadSession() {
+  try { return JSON.parse(sessionStorage.getItem(_SESSION_KEY) || 'null'); } catch(e) { return null; }
+}
+function clearSession() {
+  try { sessionStorage.removeItem(_SESSION_KEY); } catch(e) {}
+}
+
+/* ============================================================
+   VALIDAÇÃO DOS CAMPOS
+   ============================================================ */
+function validateFields() {
+  const fields = [
+    { id: 'fullName',  label: 'Nome completo' },
+    { id: 'whatsapp',  label: 'WhatsApp' },
+    { id: 'cep',       label: 'CEP' },
+    { id: 'city',      label: 'Cidade' },
+    { id: 'estado',    label: 'Estado' },
+    { id: 'address',   label: 'Endereço' },
+    { id: 'numero',    label: 'Número' }
+  ];
+  const missing = fields.filter(f => {
+    const el = document.getElementById(f.id);
+    return !el || !el.value.trim();
+  });
+  if (missing.length) {
+    const names = missing.map(f => f.label).join(', ');
+    alert(`Preencha os campos obrigatórios: ${names}`);
+    document.getElementById(missing[0].id)?.focus();
+    return false;
+  }
+  const cepVal = document.getElementById('cep').value.replace(/\D/g, '');
+  if (cepVal.length !== 8) {
+    alert('CEP inválido. Digite 8 números.');
+    document.getElementById('cep').focus();
+    return false;
+  }
+  return true;
+}
 
 /* ============================================================
    FINALIZAR PEDIDO
    ============================================================ */
 document.getElementById('finishOrder')?.addEventListener('click', async () => {
-  /* Garante que auth está pronto */
+  /* Aguarda auth estar pronto (firebase.auth() é assíncrono) */
   if (!window.__authReady) {
     await new Promise(r => {
       const iv = setInterval(() => { if (window.__authReady) { clearInterval(iv); r(); } }, 80);
@@ -70,83 +137,87 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
   }
 
   const cart = getCart();
-  if (!cart.length) { alert('Seu carrinho está vazio.'); return; }
-
-  const fullName = document.getElementById('fullName')?.value.trim();
-  const whatsapp = document.getElementById('whatsapp')?.value.trim();
-  const city     = document.getElementById('city')?.value.trim();
-  const address  = document.getElementById('address')?.value.trim();
-
-  if (!fullName || !whatsapp || !city || !address) {
-    alert('Preencha todos os dados de entrega.');
+  if (!cart.length) {
+    alert('Seu carrinho está vazio. Adicione produtos antes de finalizar.');
     return;
   }
 
-  const payment = document.querySelector('input[name="payment"]:checked')?.value || 'pix';
-  const total   = cartTotal();
+  if (!validateFields()) return;
 
-  /* Monta dados do pedido */
+  /* Recalcula total localmente para exibição — backend recalcula independentemente */
+  const total = cartTotal();
+  if (total <= 0) {
+    alert('Total do pedido inválido. Verifique os produtos no carrinho.');
+    return;
+  }
+
+  const fullName    = document.getElementById('fullName').value.trim();
+  const whatsapp    = document.getElementById('whatsapp').value.trim();
+  const cep         = document.getElementById('cep').value.replace(/\D/g, '');
+  const city        = document.getElementById('city').value.trim();
+  const estado      = document.getElementById('estado').value.trim();
+  const address     = document.getElementById('address').value.trim();
+  const numero      = document.getElementById('numero').value.trim();
+  const complemento = document.getElementById('complemento')?.value.trim() || '';
+
   const order = {
     user_id:         window.currentUser.uid,
     user_email:      window.currentUser.email,
     user_name:       window.currentUser.displayName || fullName,
     full_name:       fullName,
     whatsapp,
+    cep,
     city,
+    estado,
     address,
+    numero,
+    complemento,
     items:           cart,
-    payment:         payment,
+    payment:         'pix',
     total,
-    status:          payment === 'pix' ? 'aguardando_pagamento' : 'aguardando_confirmacao',
-    paymentStatus:   payment === 'pix' ? 'pending' : null,
-    paymentProvider: payment === 'pix' ? 'mercadopago' : null,
-    paymentMethod:   payment === 'pix' ? 'pix' : null,
+    status:          'aguardando_pagamento',
+    paymentStatus:   'pending',
+    paymentProvider: 'mercadopago',
+    paymentMethod:   'pix',
     created_at:      firebase.firestore.FieldValue.serverTimestamp()
   };
 
   const btn = document.getElementById('finishOrder');
-  btn.disabled = true;
-  btn.textContent = 'Processando...';
+  btn.disabled    = true;
+  btn.textContent = 'Gerando PIX...';
 
   try {
-    /* Salva o pedido no Firestore */
     const docRef = await db.collection('orders').add(order);
     _orderId    = docRef.id;
     _orderItems = cart;
     _orderTotal = total;
 
-    /* Log de atividade */
     db.collection('activity_logs').add({
-      type: 'pedido_recebido',
-      description: `Novo pedido <strong>#${_orderId.slice(-6)}</strong> de ${order.full_name}`,
-      color: 'green',
-      created_at: firebase.firestore.FieldValue.serverTimestamp()
+      type:        'pedido_recebido',
+      description: `Novo pedido <strong>#${_orderId.slice(-6)}</strong> de ${fullName}`,
+      color:       'green',
+      created_at:  firebase.firestore.FieldValue.serverTimestamp()
     }).catch(() => {});
 
-    if (payment === 'pix') {
-      await initPixPayment(order, cart);
-    } else {
-      /* Fluxo WhatsApp existente */
-      await handleWhatsappFlow(order, _orderId, cart, total);
-    }
+    await initPixPayment(order, cart);
 
   } catch (err) {
-    console.error('[Checkout] Erro:', err);
+    console.error('[Checkout] Erro ao criar pedido:', err);
     alert('Erro ao processar pedido. Tente novamente.');
-    btn.disabled = false;
+    btn.disabled    = false;
     btn.textContent = 'Finalizar pedido';
   }
 });
 
 /* ============================================================
-   FLUXO PIX
+   FLUXO PIX — cria pagamento no backend
    ============================================================ */
 async function initPixPayment(order, cart) {
   try {
     const res = await fetch(`${API_BASE}/api/mp-create-payment`, {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      body:    JSON.stringify({
         orderId: _orderId,
         items:   cart,
         payer:   { email: order.user_email, name: order.full_name },
@@ -162,19 +233,26 @@ async function initPixPayment(order, cart) {
     const data = await res.json();
     _paymentId = data.paymentId;
 
-    /* Atualiza o pedido com o ID do pagamento */
     await db.collection('orders').doc(_orderId).update({
       mercadopagoPaymentId: String(_paymentId),
-      externalReference:    _orderId
+      externalReference:    _orderId,
+      total:                data.total  /* total confirmado pelo backend */
     });
 
-    /* Limpa carrinho somente após pagamento criado com sucesso */
+    /* Salva sessão para sobreviver a reloads */
+    saveSession({
+      orderId:      _orderId,
+      paymentId:    _paymentId,
+      orderItems:   _orderItems,
+      orderTotal:   data.total,
+      qrCode:       data.qrCode       || null,
+      qrCodeBase64: data.qrCodeBase64 || null,
+      expiresAt:    data.expiresAt    || null,
+      status:       'pending'
+    });
+
     clearCart();
-
-    /* Exibe tela PIX */
     showPixScreen(data);
-
-    /* Inicia polling de status a cada 5s */
     startPolling();
 
   } catch (err) {
@@ -190,45 +268,60 @@ async function initPixPayment(order, cart) {
    ============================================================ */
 function showPixScreen(data) {
   document.getElementById('checkoutForm').style.display = 'none';
-  document.getElementById('pixScreen').style.display = 'block';
+  const pixEl = document.getElementById('pixScreen');
+  pixEl.style.display = 'block';
   window.scrollTo(0, 0);
 
-  /* Valor */
   const totalEl = document.getElementById('pixTotal');
-  if (totalEl) totalEl.textContent = `R$ ${Number(data.total).toFixed(2).replace('.', ',')}`;
+  if (totalEl) totalEl.textContent = `R$\u00a0${Number(data.total).toFixed(2).replace('.', ',')}`;
 
   /* QR Code */
-  const qrImg = document.getElementById('pixQrImg');
+  const qrImg  = document.getElementById('pixQrImg');
+  const qrWrap = document.getElementById('pixQrWrap');
   if (qrImg && data.qrCodeBase64) {
     qrImg.src = `data:image/png;base64,${data.qrCodeBase64}`;
-  } else if (qrImg) {
-    document.getElementById('pixQrWrap').style.display = 'none';
+  } else if (qrWrap) {
+    qrWrap.style.display = 'none';
   }
 
-  /* Código copia e cola */
+  /* Copia e cola */
   const codeEl = document.getElementById('pixCode');
-  if (codeEl) codeEl.textContent = data.qrCode || '';
+  if (codeEl) codeEl.textContent = data.qrCode || '(código indisponível)';
 
-  /* Botão copiar */
-  document.getElementById('pixCopyBtn')?.addEventListener('click', () => {
-    const code = data.qrCode || '';
-    if (!code) return;
-    navigator.clipboard.writeText(code).then(() => {
-      const btn = document.getElementById('pixCopyBtn');
-      if (btn) { btn.textContent = '✅ Copiado!'; setTimeout(() => { btn.textContent = '📋 Copiar código PIX'; }, 2000); }
-    }).catch(() => {
-      /* Fallback para browsers antigos */
-      const ta = document.createElement('textarea');
-      ta.value = code;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
+  /* Botão copiar — remove listener anterior clonando */
+  const copyBtn = document.getElementById('pixCopyBtn');
+  if (copyBtn) {
+    const clone = copyBtn.cloneNode(true);
+    copyBtn.parentNode.replaceChild(clone, copyBtn);
+    clone.addEventListener('click', () => {
+      const code = data.qrCode || '';
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(() => {
+        clone.textContent = '✅ Copiado!';
+        setTimeout(() => { clone.textContent = '📋 Copiar código PIX'; }, 2000);
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = code; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        clone.textContent = '✅ Copiado!';
+        setTimeout(() => { clone.textContent = '📋 Copiar código PIX'; }, 2000);
+      });
     });
-  });
+  }
 
-  /* Botão verificar manualmente */
-  document.getElementById('pixCheckBtn')?.addEventListener('click', () => checkPaymentStatus());
+  /* Botão verificar manualmente — remove listener anterior */
+  const checkBtn = document.getElementById('pixCheckBtn');
+  if (checkBtn) {
+    const clone = checkBtn.cloneNode(true);
+    checkBtn.parentNode.replaceChild(clone, checkBtn);
+    clone.addEventListener('click', () => checkPaymentStatus());
+  }
+
+  /* Se sessão já estava aprovada (reload pós-pagamento) */
+  const sess = loadSession();
+  if (sess && sess.status === 'approved') {
+    updatePixStatusUI('approved');
+  }
 }
 
 /* ============================================================
@@ -245,29 +338,26 @@ async function checkPaymentStatus() {
     const res = await fetch(`${API_BASE}/api/mp-payment-status?paymentId=${_paymentId}`);
     if (!res.ok) return;
     const data = await res.json();
-    updatePixStatusUI(data.status, data.statusDetail);
+    updatePixStatusUI(data.status);
   } catch (err) {
-    /* Não interrompe o polling por erro de rede */
     console.warn('[Poll] Erro ao verificar status:', err.message);
   }
 }
 
-function updatePixStatusUI(status, statusDetail) {
+function updatePixStatusUI(status) {
   const statusEl = document.getElementById('pixStatus');
   const waBtn    = document.getElementById('pixWaBtn');
 
   if (status === 'approved') {
-    /* Para o polling */
     clearInterval(_pollInterval);
     _pollInterval = null;
 
-    /* Atualiza UI */
     if (statusEl) {
       statusEl.textContent = '✅ Pagamento aprovado!';
-      statusEl.className = 'pix-status pix-status--approved';
+      statusEl.className   = 'pix-status pix-status--approved';
     }
 
-    /* Atualiza Firestore (confirmação adicional no cliente) */
+    /* Atualiza Firestore */
     if (_orderId) {
       db.collection('orders').doc(_orderId).update({
         status:        'pago',
@@ -276,7 +366,11 @@ function updatePixStatusUI(status, statusDetail) {
       }).catch(() => {});
     }
 
-    /* Exibe botão do WhatsApp */
+    /* Persiste estado aprovado na sessão */
+    const sess = loadSession();
+    if (sess) saveSession({ ...sess, status: 'approved' });
+
+    /* Exibe botão WhatsApp */
     if (waBtn) {
       waBtn.classList.remove('hidden');
       buildWaLink(waBtn);
@@ -286,7 +380,7 @@ function updatePixStatusUI(status, statusDetail) {
     clearInterval(_pollInterval);
     if (statusEl) {
       statusEl.textContent = `❌ Pagamento ${status === 'rejected' ? 'recusado' : 'cancelado'}. Tente novamente.`;
-      statusEl.className = 'pix-status pix-status--rejected';
+      statusEl.className   = 'pix-status pix-status--rejected';
     }
     if (_orderId) {
       db.collection('orders').doc(_orderId).update({
@@ -294,6 +388,8 @@ function updatePixStatusUI(status, statusDetail) {
         paymentStatus: status
       }).catch(() => {});
     }
+    clearSession();
+
   } else {
     if (statusEl && !statusEl.classList.contains('pix-status--approved')) {
       statusEl.textContent = 'Aguardando pagamento...';
@@ -302,7 +398,7 @@ function updatePixStatusUI(status, statusDetail) {
 }
 
 /* ============================================================
-   LINK WHATSAPP PÓS-PAGAMENTO
+   LINK WHATSAPP — só aparece após pagamento aprovado
    ============================================================ */
 async function buildWaLink(waBtn) {
   let waNum = '5543996019761'; /* fallback */
@@ -311,15 +407,17 @@ async function buildWaLink(waBtn) {
     if (cfgSnap.exists && cfgSnap.data().whatsapp) {
       waNum = String(cfgSnap.data().whatsapp).replace(/\D/g, '');
     }
-  } catch(e) { /* usa fallback */ }
+  } catch(e) {}
 
-  const items   = _orderItems || getCart();
-  const total   = _orderTotal || cartTotal();
+  const items   = _orderItems || [];
+  const total   = _orderTotal || 0;
   const orderId = _orderId ? `#${_orderId.slice(-6)}` : '';
 
-  const itensTexto = items.map(i =>
-    `• ${i.qty}x ${i.name} (${i.size}) - R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')}`
-  ).join('\n');
+  const itensTexto = items.map(i => {
+    const price = parseFloat(i.price) || 0;
+    const qty   = parseInt(i.qty, 10) || 1;
+    return `• ${qty}x ${i.name}${i.size ? ' (' + i.size + ')' : ''} - R$ ${(price * qty).toFixed(2).replace('.', ',')}`;
+  }).join('\n');
 
   const msg = encodeURIComponent(
     `Olá! Gostaria de confirmar meu pedido na Teixeira Style.\n\n` +
@@ -328,63 +426,75 @@ async function buildWaLink(waBtn) {
     `Total: R$ ${Number(total).toFixed(2).replace('.', ',')}\n` +
     `Pagamento: PIX\n` +
     `Status: Pago ✅\n\n` +
-    `Gostaria de confirmar com vocês como será feito o frete/forma de entrega e combinar os detalhes da entrega.\n\n` +
+    `Gostaria de confirmar com vocês como será feito o frete/forma de entrega.\n\n` +
     `Obrigado!`
   );
 
   waBtn.href = `https://wa.me/${waNum}?text=${msg}`;
-
-  /* Registra que o cliente clicou no WhatsApp */
   waBtn.addEventListener('click', () => {
-    if (_orderId) {
-      db.collection('orders').doc(_orderId).update({ whatsappConfirmed: true }).catch(() => {});
-    }
+    if (_orderId) db.collection('orders').doc(_orderId).update({ whatsappConfirmed: true }).catch(() => {});
+    clearSession();
   }, { once: true });
 }
 
 /* ============================================================
-   FLUXO WHATSAPP (mantém comportamento original)
+   RESTAURA SESSÃO APÓS RELOAD
+   Evita criar novo pedido/pagamento se usuário recarregou a página
    ============================================================ */
-async function handleWhatsappFlow(order, orderId, cart, total) {
-  /* Notificação WhatsApp para o dono */
-  try {
-    const cfgSnap = await db.collection('store_settings').doc('main').get();
-    const cfg = cfgSnap.exists ? cfgSnap.data() : {};
-    if (cfg.notifyWhatsapp && cfg.whatsapp) {
-      const ownerNum = String(cfg.whatsapp).replace(/\D/g, '');
-      const itensNot = cart.map(i => `• ${i.qty}x ${i.name} (${i.size}) - R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')}`).join('\n');
-      const notifMsg = encodeURIComponent(
-        `🛍️ *Novo pedido #${orderId.slice(-6)}* recebido no site!\n\n` +
-        `👤 Cliente: ${order.full_name}\n📱 WhatsApp: ${order.whatsapp}\n📍 Cidade: ${order.city}\n\n` +
-        `🛒 Itens:\n${itensNot}\n\n💰 Total: R$ ${total.toFixed(2).replace('.', ',')}\n💳 Pagamento: WhatsApp`
-      );
-      window.open(`https://wa.me/${ownerNum}?text=${notifMsg}`, '_blank');
-    }
-  } catch(e) {}
+function tryRestoreSession() {
+  const sess = loadSession();
+  if (!sess || !sess.paymentId || !sess.orderId) return false;
 
-  clearCart();
+  _orderId    = sess.orderId;
+  _paymentId  = sess.paymentId;
+  _orderItems = sess.orderItems || [];
+  _orderTotal = sess.orderTotal || 0;
 
-  const itensTexto = cart.map(i =>
-    `• ${i.qty}x ${i.name} (${i.size}) - R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')}`
-  ).join('\n');
+  showPixScreen({
+    total:       sess.orderTotal,
+    qrCode:      sess.qrCode,
+    qrCodeBase64: sess.qrCodeBase64
+  });
 
-  const msg = encodeURIComponent(
-    `Olá! Finalizei o pedido *#${orderId.slice(-6)}* no site.\n\n` +
-    itensTexto +
-    `\n\nTotal: R$ ${total.toFixed(2).replace('.', ',')}\nNome: ${order.full_name}\nEndereço: ${order.address}, ${order.city}`
-  );
-
-  let waNum = '5543996019761';
-  try {
-    const cfgSnap = await db.collection('store_settings').doc('main').get();
-    if (cfgSnap.exists && cfgSnap.data().whatsapp) waNum = String(cfgSnap.data().whatsapp).replace(/\D/g, '');
-  } catch(e) {}
-
-  window.open(`https://wa.me/${waNum}?text=${msg}`, '_blank');
-  window.location.href = 'pedidos.html';
+  if (sess.status !== 'approved') {
+    startPolling();
+  }
+  return true;
 }
 
 /* ============================================================
-   INIT
+   INIT — aguarda carrinho + auth antes de renderizar
    ============================================================ */
-renderSummary();
+function initCheckout() {
+  /* Tenta restaurar sessão de pagamento em andamento */
+  if (tryRestoreSession()) return;
+
+  /* Aplica máscaras */
+  const cepEl   = document.getElementById('cep');
+  const phoneEl = document.getElementById('whatsapp');
+  if (cepEl)   maskCep(cepEl);
+  if (phoneEl) maskPhone(phoneEl);
+
+  /* Renderiza resumo imediatamente com o que há no localStorage */
+  renderSummary();
+
+  /* Re-renderiza após loadCartFromFirestore (auth.js chama isso após login) */
+  const _origLoad = window.loadCartFromFirestore;
+  if (typeof _origLoad === 'function') {
+    window.loadCartFromFirestore = async function() {
+      await _origLoad.apply(this, arguments);
+      renderSummary();
+    };
+  }
+
+  /* Garante re-render quando auth resolver e carrinho for carregado */
+  const authCheckInterval = setInterval(() => {
+    if (window.__authReady) {
+      clearInterval(authCheckInterval);
+      renderSummary();
+    }
+  }, 100);
+  setTimeout(() => { clearInterval(authCheckInterval); renderSummary(); }, 6000);
+}
+
+initCheckout();

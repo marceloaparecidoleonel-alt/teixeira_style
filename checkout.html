@@ -38,6 +38,20 @@
     .pix-wa-btn { display: block; margin-top: 1.5rem; background: #25D366; color: #fff; padding: 0.9rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 1rem; text-decoration: none; }
     .pix-wa-btn:hover { background: #1ebe5d; }
     .hidden { display: none !important; }
+
+    /* ---- campos lado a lado ---- */
+    .form-row { display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; }
+    .form-row .form-group--flex { flex: 1; }
+    .form-row .form-group--estado { width: 90px; }
+    .form-row .form-group--numero { width: 110px; }
+    .form-row .form-group--flex,
+    .form-row .form-group--numero { min-width: 0; }
+    .form-input option { background: #17171D; color: #fff; }
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr 1fr; }
+      .form-row .form-group--estado { width: auto; }
+      .form-row .form-group--numero { width: auto; }
+    }
   </style>
 </head>
 <body class="page-checkout">
@@ -75,35 +89,52 @@
           <input type="tel" class="form-input" id="whatsapp" placeholder="(43) 90000-0000" />
         </div>
         <div class="form-group">
-          <label class="form-label">Cidade/UF</label>
-          <input type="text" class="form-input" id="city" />
+          <label class="form-label">CEP <span style="color:#e74c3c">*</span></label>
+          <input type="text" class="form-input" id="cep" placeholder="00000-000" maxlength="9" inputmode="numeric" />
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group--flex">
+            <label class="form-label">Cidade <span style="color:#e74c3c">*</span></label>
+            <input type="text" class="form-input" id="city" />
+          </div>
+          <div class="form-group form-group--estado">
+            <label class="form-label">Estado <span style="color:#e74c3c">*</span></label>
+            <select class="form-input" id="estado">
+              <option value="">UF</option>
+              <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+              <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+              <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+              <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+              <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+              <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+              <option>SP</option><option>SE</option><option>TO</option>
+            </select>
+          </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Endereço completo</label>
-          <textarea class="form-input" id="address" rows="3"></textarea>
+          <label class="form-label">Endereço <span style="color:#e74c3c">*</span></label>
+          <input type="text" class="form-input" id="address" placeholder="Rua, Avenida..." />
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group--numero">
+            <label class="form-label">Número <span style="color:#e74c3c">*</span></label>
+            <input type="text" class="form-input" id="numero" placeholder="Ex: 123" />
+          </div>
+          <div class="form-group form-group--flex">
+            <label class="form-label">Complemento</label>
+            <input type="text" class="form-input" id="complemento" placeholder="Apto, Bloco... (opcional)" />
+          </div>
         </div>
 
         <h2 style="margin-top:1.5rem">Forma de pagamento</h2>
         <div class="payment-methods">
-          <label class="payment-option">
+          <label class="payment-option payment-option--pix">
             <input type="radio" name="payment" value="pix" checked />
             <span>
-              <svg width="18" height="18" viewBox="0 0 512 512" fill="#32BCAD" style="vertical-align:middle;margin-right:6px"><path d="M242.4 292.5C247.8 287.1 257.1 287.1 262.5 292.5L339.5 369.5C353.8 383.8 372.6 391.4 392.6 391.4C412.6 391.4 431.4 383.8 445.7 369.5C474.2 341 474.2 295 445.7 266.5L382.2 202.1L382.2 202.1L338.5 158.4C337.7 157.6 336.9 156.7 336.2 155.8L282.2 101.8C267.9 87.54 248.1 79.96 228.1 79.96C208.1 79.96 189.3 87.54 174.1 101.8L66.29 209.7C51.1 223.9 43.43 243 43.43 263C43.43 283 51.1 302.1 66.29 316.4L93.53 343.6C98.73 348.8 107.3 348.8 112.5 343.6L189.5 266.5C194.9 261.1 204.2 261.1 209.6 266.5C215 271.9 215 281.2 209.6 286.6L132.6 363.6C121.1 375.1 121.1 393.9 132.6 405.4L132.6 405.4L159.8 432.6C174.1 446.9 192.9 454.5 212.9 454.5C232.9 454.5 251.7 446.9 266 432.6L374 324.5C388.3 310.2 395.9 291.4 395.9 271.4C395.9 251.4 388.3 232.6 374 218.3L342.8 187.1C337.5 181.8 329 181.8 323.7 187.1L246.7 264.1C241.4 269.4 232.9 269.4 227.6 264.1C222.2 258.7 222.2 249.4 227.6 244L304.6 166.1C316.1 155.5 316.1 136.7 304.6 125.2L277.4 98.02C263.1 83.74 244.3 76.16 224.3 76.16C204.3 76.16 185.5 83.74 171.2 98.02L63.29 206C48.1 220.3 40.43 239.4 40.43 259.4C40.43 279.4 48.1 298.5 63.29 312.8L90.52 340C95.73 345.2 95.73 353.8 90.52 359L13.52 436C8.219 441.2 8.219 449.8 13.52 455C18.82 460.3 27.38 460.3 32.68 455L109.7 378C114.1 372.7 123.5 372.7 128.8 378L155.1 405.2C163.8 413.9 175 418.7 186.8 418.7C198.6 418.7 209.8 413.9 218.5 405.2L326.5 297.2C335.1 288.5 335.1 274.3 326.5 265.6C317.8 256.9 303.6 256.9 294.9 265.6L217.9 342.6C212.6 347.9 204.1 347.9 198.8 342.6L171.6 315.4C162.9 306.7 162.9 292.5 171.6 283.8L248.6 206.8C253.9 201.5 253.9 193 248.6 187.7C243.3 182.4 234.8 182.4 229.5 187.7L152.5 264.7C141 276.2 141 295 152.5 306.5L179.7 333.7C188.4 342.4 200.5 347.1 212.9 347.1C225.3 347.1 237.4 342.4 246.1 333.7L323.1 256.7C327.4 252.4 333.2 250 339.3 250C345.4 250 351.2 252.4 355.5 256.7C364.2 265.4 364.2 279.6 355.5 288.3L247.5 396.3C238.8 405 227.6 409.7 215.2 409.7C202.8 409.7 191.6 405 182.9 396.3L68.29 281.6C42.29 255.6 42.29 213.4 68.29 187.4L176.3 79.4C202.3 53.4 244.5 53.4 270.5 79.4L270.5 79.38L324.5 133.4C330.8 139.7 330.8 149.9 324.5 156.2L247.5 233.2C242.2 238.5 242.2 247 247.5 252.3C252.8 257.6 261.3 257.6 266.6 252.3L343.6 175.3C366.1 152.8 366.1 116.2 343.6 93.67L289.6 39.67C267.1 17.18 230.5 17.18 208 39.67L100 147.7C55.03 192.6 55.03 265.4 100 310.3L214.6 425C236.1 446.5 265.3 454.5 292.9 454.5C320.5 454.5 347.1 443.7 367.1 423.7L431.6 360.2C447.7 344.1 456.6 322.7 456.6 300.2C456.6 277.7 447.7 256.3 431.6 240.2L362.1 170.7C356.7 165.3 348.2 165.3 342.9 170.7C337.5 176 337.5 184.5 342.9 189.9L412.4 259.4C424.9 271.9 424.9 292.1 412.4 304.6L348.9 368.1C325.4 391.6 289.8 398.6 259.4 384.4C249.8 379.9 241.1 373.3 234.1 365L242.4 292.5z"/></svg>
-              PIX — Pagamento instantâneo
+              <svg width="16" height="16" viewBox="0 0 512 512" fill="#32BCAD" style="vertical-align:middle;margin-right:6px"><polygon points="256,32 480,480 32,480"/></svg>
+              <strong>PIX</strong> — Pagamento instantâneo
             </span>
           </label>
-
-          <label class="payment-option">
-            <input type="radio" name="payment" value="whatsapp" />
-            <span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;color:#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.116 1.524 5.847L.057 23.882l6.196-1.625A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.368l-.36-.214-3.717.975.992-3.625-.235-.372A9.818 9.818 0 012.182 12C2.182 6.578 6.578 2.182 12 2.182S21.818 6.578 21.818 12 17.422 21.818 12 21.818z"/></svg>
-              WhatsApp (confirmar pedido)
-            </span>
-          </label>
-        </div>
-
-        <div class="whatsapp-info-box" id="whatsappInfoBox" style="display:none">
-          <p>Ao finalizar, você será redirecionado ao WhatsApp para confirmar o pedido com a nossa equipe.</p>
         </div>
       </section>
 
