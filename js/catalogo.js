@@ -189,7 +189,6 @@ document.getElementById('modalAddToCart')?.addEventListener('click', () => {
   const _cStock = currentModalProduct.stock != null ? currentModalProduct.stock : (currentModalProduct.availability === 'available' ? 1 : 0);
   if (!currentModalProduct || _cStock <= 0) return;
   if (!window.currentUser) {
-    /* Salva a ação para ser executada automaticamente após o login */
     window.__pendingCartAction = {
       type: 'addToCart',
       product: currentModalProduct,
@@ -200,8 +199,12 @@ document.getElementById('modalAddToCart')?.addEventListener('click', () => {
     if (typeof signInWithGoogle === 'function') signInWithGoogle();
     return;
   }
-  addToCart(currentModalProduct, getSelectedSize(), 1);
-  showToastModal('Produto adicionado ao carrinho!');
+  const ok = addToCart(currentModalProduct, getSelectedSize(), 1);
+  if (ok === false) {
+    showToastModal(`Estoque esgotado: máximo ${_cStock} un.`);
+  } else {
+    showToastModal('Produto adicionado ao carrinho!');
+  }
 });
 
 document.getElementById('modalBuyNow')?.addEventListener('click', () => {
@@ -217,7 +220,11 @@ document.getElementById('modalBuyNow')?.addEventListener('click', () => {
     if (typeof signInWithGoogle === 'function') signInWithGoogle();
     return;
   }
-  addToCart(currentModalProduct, getSelectedSize(), 1);
+  const ok = addToCart(currentModalProduct, getSelectedSize(), 1);
+  if (ok === false) {
+    showToastModal(`Estoque esgotado: máximo ${_bStock} un.`);
+    return;
+  }
   window.location.href = 'checkout.html';
 });
 

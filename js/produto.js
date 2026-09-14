@@ -178,7 +178,13 @@ document.getElementById('produtoBuyNow')?.addEventListener('click', () => {
       requireLogin({ type: 'buyNow', product: currentProduct, size, qty: currentQty });
       return;
     }
-    if (typeof addToCart === 'function') addToCart(currentProduct, size, currentQty);
+    if (typeof addToCart === 'function') {
+      const ok = addToCart(currentProduct, size, currentQty);
+      if (ok === false) {
+        showToast(`Estoque insuficiente. Máximo disponível: ${currentStock} un.`);
+        return;
+      }
+    }
     window.location.href = 'checkout.html';
   });
 });
@@ -198,7 +204,13 @@ document.getElementById('produtoAddCart')?.addEventListener('click', () => {
       });
       return;
     }
-    if (typeof addToCart === 'function') addToCart(currentProduct, size, currentQty);
+    if (typeof addToCart === 'function') {
+      const ok = addToCart(currentProduct, size, currentQty);
+      if (ok === false) {
+        showToast(`Estoque insuficiente. Máximo disponível: ${currentStock} un.`);
+        return;
+      }
+    }
     showToast('Produto adicionado ao carrinho!');
   });
 });

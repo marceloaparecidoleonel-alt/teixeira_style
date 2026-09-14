@@ -17,22 +17,42 @@ function saveCart(cart) {
   syncCartToFirestore();
 }
 
+/* Retorna quantas unidades de um produto+tamanho já estão no carrinho */
+function getCartQtyForProduct(productId, size) {
+  const cart = getCart();
+  const existing = cart.find(i => i.id === productId && i.size === size);
+  return existing ? existing.qty : 0;
+}
+
+/* addToCart — retorna true se adicionou, false se bloqueado por estoque */
 function addToCart(product, size, qty = 1) {
+  const stock = product.stock != null ? parseInt(product.stock, 10) : (product.availability === 'available' ? 1 : 0);
   const cart = getCart();
   const existing = cart.find(i => i.id === product.id && i.size === size);
+  const currentQty = existing ? existing.qty : 0;
+
+  /* Bloqueia se exceder estoque */
+  if (stock > 0 && currentQty + qty > stock) {
+    return false; /* sinaliza para o chamador exibir mensagem */
+  }
+
   if (existing) {
     existing.qty += qty;
   } else {
     cart.push({
-      id: product.id,
-      name: product.name,
+      id:        product.id,
+      name:      product.name,
       image_url: product.image_url || '',
-      price: product.price || 0,
+      price:     product.price || 0,
+      stock:     stock,         /* salva o estoque no item para cart-ui.js usar */
       size,
       qty
     });
   }
+  /* Atualiza o stock no item existente também (pode ter mudado no Firestore) */
+  if (existing) existing.stock = stock;
   saveCart(cart);
+  return true;
 }
 
 function removeFromCart(productId, size) {
@@ -122,3 +142,4 @@ window.clearCart = clearCart;
 window.clearLocalCart = clearLocalCart;
 window.cartTotal = cartTotal;
 window.syncCartToFirestore = syncCartToFirestore;
+window.getCartQtyForProduct = getCartQtyForProduct;

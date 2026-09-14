@@ -6,7 +6,39 @@
 
 const https = require('https');
 
-const MP_API_URL = 'https://api.mercadopago.com/v1/payments';
+/* ---- Consulta estoque de um produto via Firestore REST API ---- */
+function getProductStock(projectId, productId) {
+  return new Promise((resolve) => {
+    const path = `/v1/projects/${projectId}/databases/(default)/documents/products/${productId}`;
+    const options = {
+      hostname: 'firestore.googleapis.com',
+      path,
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    };
+    const req = https.request(options, res => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const doc = JSON.parse(data);
+          const fields = doc.fields || {};
+          /* Firestore REST retorna { integerValue } ou { doubleValue } */
+          const stockField = fields.stock;
+          if (stockField) {
+            const stock = parseInt(stockField.integerValue || stockField.doubleValue || 0, 10);
+            return resolve({ stock, found: true });
+          }
+          /* Fallback: availability === 'available' → stock = 1 */
+          const avail = fields.availability?.stringValue;
+          return resolve({ stock: avail === 'available' ? 1 : 0, found: true });
+        } catch(e) { resolve({ stock: null, found: false }); }
+      });
+    });
+    req.on('error', () => resolve({ stock: null, found: false }));
+    req.end();
+  });
+}
 
 function mpRequest(path, method, body, idempotencyKey) {
   return new Promise((resolve, reject) => {
@@ -72,6 +104,28 @@ module.exports = async function handler(req, res) {
     const totalRounded = Math.round(calculatedTotal * 100) / 100;
     if (totalRounded <= 0) {
       return res.status(400).json({ error: 'Total calculado inválido' });
+    }
+
+    /* Valida estoque no Firestore (backend — cliente não pode contornar) */
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    if (projectId) {
+      for (const item of items) {
+        const qty = parseInt(item.qty, 10);
+        const { stock, found } = await getProductStock(projectId, item.id || item.productId || '');
+        if (!found) continue; /* se não conseguiu consultar, não bloqueia (evita falso positivo) */
+        if (stock !== null && qty > stock) {
+          return res.status(400).json({
+            error: `Estoque insuficiente`,
+            detail: `"${item.name}": solicitado ${qty}, disponível ${stock}`
+          });
+        }
+        if (stock === 0) {
+          return res.status(400).json({
+            error: `Produto esgotado`,
+            detail: `"${item.name}" está sem estoque`
+          });
+        }
+      }
     }
 
     /* Chave de idempotência — baseada no orderId (previne duplicatas) */

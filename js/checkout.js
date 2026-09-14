@@ -168,6 +168,39 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
     return;
   }
 
+  /* Valida estoque atual no Firestore para cada item do carrinho */
+  const btn = document.getElementById('finishOrder');
+  btn.disabled    = true;
+  btn.textContent = 'Verificando estoque...';
+  try {
+    for (const item of cart) {
+      const qty = parseInt(item.qty, 10) || 0;
+      if (qty < 1) {
+        alert(`Quantidade inválida para o produto "${item.name}".`);
+        btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
+      }
+      const snap = await db.collection('products').doc(item.id).get();
+      if (!snap.exists) {
+        alert(`Produto "${item.name}" não encontrado. Remova-o do carrinho e tente novamente.`);
+        btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
+      }
+      const pData = snap.data();
+      const stock = pData.stock != null ? parseInt(pData.stock, 10) : (pData.availability === 'available' ? 1 : 0);
+      if (stock <= 0) {
+        alert(`"${item.name}" está esgotado. Remova-o do carrinho para continuar.`);
+        btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
+      }
+      if (qty > stock) {
+        alert(`"${item.name}": você tem ${qty} no carrinho, mas o estoque disponível é ${stock}. Ajuste a quantidade e tente novamente.`);
+        btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
+      }
+    }
+  } catch (stockErr) {
+    console.error('[Checkout] Erro ao verificar estoque:', stockErr);
+    alert('Não foi possível verificar o estoque. Verifique sua conexão e tente novamente.');
+    btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
+  }
+
   const fullName    = document.getElementById('fullName').value.trim();
   const whatsapp    = document.getElementById('whatsapp').value.trim();
   const cep         = document.getElementById('cep').value.replace(/\D/g, '');
@@ -199,8 +232,6 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
     created_at:      firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  const btn = document.getElementById('finishOrder');
-  btn.disabled    = true;
   btn.textContent = 'Gerando PIX...';
 
   try {
