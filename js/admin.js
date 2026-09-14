@@ -1490,6 +1490,84 @@ function loadOrders() {
 }
 
 /* ============================================================
+   ORDERS — HISTÓRICO & LIMPEZA
+   ============================================================ */
+
+/* Limpar pedidos: move todos para orders_history e remove de orders */
+document.getElementById('btnLimparPedidos')?.addEventListener('click', async () => {
+  const snap = await db.collection('orders').orderBy('created_at', 'desc').get();
+  if (snap.empty) { showToast('Nenhum pedido para limpar.'); return; }
+  if (!confirm(`Mover ${snap.size} pedido(s) para o histórico? Eles saem da lista ativa mas ficam salvos no histórico.`)) return;
+  const batch = db.batch();
+  snap.docs.forEach(doc => {
+    const histRef = db.collection('orders_history').doc(doc.id);
+    batch.set(histRef, { ...doc.data(), archived_at: firebase.firestore.FieldValue.serverTimestamp() });
+    batch.delete(db.collection('orders').doc(doc.id));
+  });
+  try {
+    await batch.commit();
+    showToast(`${snap.size} pedido(s) movido(s) para o histórico!`);
+  } catch (e) { showToast('Erro ao limpar pedidos.', 'error'); console.error(e); }
+});
+
+/* Ver Histórico: abre modal com pedidos arquivados */
+document.getElementById('btnVerHistorico')?.addEventListener('click', async () => {
+  const modal = document.getElementById('historicoModal');
+  const tbody = document.getElementById('historicoBody');
+  if (!modal || !tbody) return;
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">Carregando...</td></tr>';
+  modal.classList.remove('hidden');
+  try {
+    const snap = await db.collection('orders_history').orderBy('archived_at', 'desc').get();
+    if (snap.empty) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888">Nenhum pedido no histórico.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = snap.docs.map(doc => {
+      const o  = doc.data();
+      const d  = o.created_at  ? new Date(o.created_at.seconds  * 1000).toLocaleDateString('pt-BR') : '-';
+      const da = o.archived_at ? new Date(o.archived_at.seconds * 1000).toLocaleDateString('pt-BR') : '-';
+      const payLabel = { whatsapp: 'WhatsApp', pix: 'PIX', mercadopago: 'Mercado Pago' }[o.payment] || o.payment || '-';
+      const st = o.status || '-';
+      const bc = STATUS_COLOR[st] || '#888';
+      const bl = STATUS_LABEL[st] || st;
+      return `<tr>
+        <td>#${doc.id.slice(-6)}</td>
+        <td>${o.full_name || o.user_name || '-'}</td>
+        <td>${o.whatsapp || '-'}</td>
+        <td>R$ ${Number(o.total || 0).toFixed(2).replace('.', ',')}</td>
+        <td>${payLabel}</td>
+        <td><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;background:${bc}22;color:${bc};border:1px solid ${bc}55">${bl}</span></td>
+        <td>${d}</td>
+        <td>${da}</td>
+      </tr>`;
+    }).join('');
+  } catch (e) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#e74c3c">Erro ao carregar histórico.</td></tr>'; }
+});
+
+/* Fechar modal histórico */
+document.getElementById('historicoModalClose')?.addEventListener('click', () => {
+  document.getElementById('historicoModal')?.classList.add('hidden');
+});
+document.getElementById('historicoModal')?.addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+});
+
+/* Apagar Tudo Definitivamente do histórico */
+document.getElementById('btnApagarHistorico')?.addEventListener('click', async () => {
+  const snap = await db.collection('orders_history').get();
+  if (snap.empty) { showToast('Histórico já está vazio.'); return; }
+  if (!confirm(`⚠️ ATENÇÃO: Isso vai apagar PERMANENTEMENTE ${snap.size} pedido(s) do histórico. Essa ação não pode ser desfeita. Continuar?`)) return;
+  const batch = db.batch();
+  snap.docs.forEach(doc => batch.delete(db.collection('orders_history').doc(doc.id)));
+  try {
+    await batch.commit();
+    document.getElementById('historicoBody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888">Histórico apagado.</td></tr>';
+    showToast('Histórico apagado definitivamente!');
+  } catch (e) { showToast('Erro ao apagar histórico.', 'error'); console.error(e); }
+});
+
+/* ============================================================
    SETTINGS — Configurações da Loja (Firestore: store_settings/main)
    ============================================================ */
 

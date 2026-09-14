@@ -420,6 +420,10 @@
         <section class="page" id="page-orders">
           <div class="page-header">
             <h1 class="page-title">Pedidos</h1>
+            <div style="display:flex;gap:0.5rem;margin-left:auto">
+              <button id="btnVerHistorico" class="btn-secondary" style="font-size:0.8rem;padding:0.4rem 0.9rem">📋 Ver Histórico</button>
+              <button id="btnLimparPedidos" class="btn-secondary" style="font-size:0.8rem;padding:0.4rem 0.9rem;color:#e74c3c;border-color:#e74c3c">🗑️ Limpar Pedidos</button>
+            </div>
           </div>
           <div class="table-wrap">
             <table class="data-table">
@@ -430,6 +434,27 @@
             </table>
           </div>
         </section>
+
+        <!-- === MODAL HISTÓRICO DE PEDIDOS === -->
+        <div class="modal-overlay hidden" id="historicoModal">
+          <div class="modal" style="max-width:900px;width:95%">
+            <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+              <h2 class="modal-title">📋 Histórico de Pedidos Excluídos</h2>
+              <div style="display:flex;gap:0.5rem;align-items:center">
+                <button id="btnApagarHistorico" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:0.35rem 0.9rem;font-size:0.78rem;cursor:pointer;font-weight:600">🗑️ Apagar Tudo Definitivamente</button>
+                <button class="modal-close" id="historicoModalClose">&times;</button>
+              </div>
+            </div>
+            <div class="modal-body" style="padding:0">
+              <div class="table-wrap" style="max-height:60vh;overflow-y:auto">
+                <table class="data-table">
+                  <thead><tr><th>Pedido</th><th>Cliente</th><th>WhatsApp</th><th>Total</th><th>Pagamento</th><th>Status</th><th>Data</th><th>Excluído em</th></tr></thead>
+                  <tbody id="historicoBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- === GALERIA === -->
         <section class="page" id="page-gallery">
