@@ -16,7 +16,8 @@ let _paymentId       = null;
 let _pollInterval    = null;
 let _orderItems      = null;
 let _orderTotal      = 0;
-let _isCreatingOrder = false; /* guarda contra duplo clique */
+let _isCreatingOrder  = false; /* guarda contra duplo clique */
+let _paymentApproved  = false; /* true após pagamento confirmado — evita re-poll */
 
 /* Chave de sessão para persistência durante reload */
 const _SESSION_KEY = 'ts_checkout_session';
@@ -420,6 +421,7 @@ function updatePixStatusUI(status) {
   if (status === 'approved') {
     clearInterval(_pollInterval);
     _pollInterval = null;
+    _paymentApproved = true;
 
     if (statusEl) {
       statusEl.textContent = '✅ Pagamento aprovado!';
@@ -538,6 +540,20 @@ function tryRestoreSession() {
     return false;
   }
 
+  /* Sessão obsoleta: total salvo não bate com o carrinho atual.
+     Isso indica que o cliente abandonou e voltou com itens diferentes
+     (ou o carrinho mudou). Descarta a sessão velha para evitar R$X errado. */
+  const currentTotal = (typeof cartTotal === 'function') ? cartTotal() : 0;
+  if (currentTotal > 0 && Math.abs((sess.orderTotal || 0) - currentTotal) > 0.01) {
+    console.log(`[Checkout] Total da sessão (${sess.orderTotal}) ≠ carrinho atual (${currentTotal}) — descartando.`);
+    _checkoutDb.collection('orders').doc(sess.orderId).update({
+      status:        'cancelado',
+      paymentStatus: 'expired'
+    }).catch(() => {});
+    clearSession();
+    return false;
+  }
+
   _orderId    = sess.orderId;
   _paymentId  = sess.paymentId;
   _orderItems = sess.orderItems || [];
@@ -549,7 +565,14 @@ function tryRestoreSession() {
     qrCodeBase64: sess.qrCodeBase64
   });
 
-  startPolling();
+  /* Verifica status imediatamente ao restaurar — captura pagamentos aprovados
+     enquanto a página estava fechada. _orderId é zerado por updatePixStatusUI
+     quando approved, então usamos isso como sinal. */
+  checkPaymentStatus().then(() => {
+    /* Inicia polling apenas se pagamento ainda não foi aprovado */
+    if (!_paymentApproved) startPolling();
+  }).catch(() => { if (!_paymentApproved) startPolling(); });
+
   return true;
 }
 
