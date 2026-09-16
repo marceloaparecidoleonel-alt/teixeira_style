@@ -38,6 +38,10 @@ async function loadProducts() {
 /* ---- RENDER PRODUCTS ---- */
 function renderProducts() {
   let filtered = allProducts.filter(p => {
+    /* Oculta produtos sem estoque */
+    const stock = p.stock != null ? parseInt(p.stock, 10) : (p.availability === 'available' ? 1 : 0);
+    if (stock <= 0) return false;
+
     const slug = p.category_slug || (p.category_name ? p.category_name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-') : '');
     const matchCat = currentCat === 'todos' || slug === currentCat;
     const matchSearch = p.name.toLowerCase().includes(currentSearch) || (p.material && p.material.toLowerCase().includes(currentSearch));

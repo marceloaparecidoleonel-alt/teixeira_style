@@ -2,13 +2,19 @@
    TEIXEIRA STYLE — Histórico de Pedidos do Cliente
    ============================================================ */
 
-const db = window.fbDb;
+/* Não captura window.fbDb no topo — pode ser undefined nesse momento.
+   Cada função usa window.fbDb diretamente para pegar o valor atual. */
 const listEl = document.getElementById('ordersList');
 
 async function loadOrders(user) {
   if (!listEl) return;
   if (!user) {
     listEl.innerHTML = '<p class="orders-empty">Faça login para ver seus pedidos.</p>';
+    return;
+  }
+  const db = window.fbDb;
+  if (!db) {
+    listEl.innerHTML = '<p class="orders-empty">Erro de conexão. Recarregue a página.</p>';
     return;
   }
   listEl.innerHTML = '<p class="orders-empty">Carregando...</p>';
@@ -76,6 +82,7 @@ async function loadOrders(user) {
    Corrige aqui usando o SDK autenticado do cliente.
    ============================================================ */
 async function recoverMissingStockDecrement(orderId, items) {
+  const db = window.fbDb;
   if (!db || !orderId || !Array.isArray(items) || !items.length) return;
   try {
     const orderSnap = await db.collection('orders').doc(orderId).get();
@@ -107,6 +114,35 @@ async function recoverMissingStockDecrement(orderId, items) {
   } catch(e) { console.warn('[Stock recovery] Erro:', e.message); }
 }
 
-/* Usa o user recebido diretamente pelo callback — evita race condition
-   com window.currentUser que pode não estar definido ainda */
-window.fbAuth?.onAuthStateChanged(user => loadOrders(user));
+/* Registra o listener de auth de forma robusta:
+   - Se window.fbAuth já existe, registra imediatamente
+   - Caso contrário, aguarda o DOMContentLoaded e tenta novamente
+   - Fallback: usa window.currentUser se disponível após 3s */
+function _registerAuthListener() {
+  if (window.fbAuth) {
+    window.fbAuth.onAuthStateChanged(user => loadOrders(user));
+    return;
+  }
+  /* fbAuth ainda não existe — tenta após DOMContentLoaded */
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.fbAuth) {
+      window.fbAuth.onAuthStateChanged(user => loadOrders(user));
+    } else {
+      /* Último recurso: poll curto */
+      let attempts = 0;
+      const iv = setInterval(() => {
+        attempts++;
+        if (window.fbAuth) {
+          clearInterval(iv);
+          window.fbAuth.onAuthStateChanged(user => loadOrders(user));
+        } else if (attempts > 30) {
+          clearInterval(iv);
+          /* Tenta com currentUser como fallback */
+          if (window.currentUser) loadOrders(window.currentUser);
+        }
+      }, 100);
+    }
+  });
+}
+
+_registerAuthListener();
