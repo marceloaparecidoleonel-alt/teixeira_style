@@ -417,6 +417,11 @@ function updatePixStatusUI(status) {
         paymentStatus: 'approved',
         paidAt:        new Date().toISOString()
       }).catch(() => {});
+
+      /* Baixa de estoque — ocorre uma única vez por pedido (idempotência via stockDecremented) */
+      _decrementStockOnce(_orderId, _orderItems).catch(e =>
+        console.warn('[Checkout/Stock] Erro ao baixar estoque:', e.message)
+      );
     }
 
     /* Persiste estado aprovado na sessão */
@@ -513,6 +518,62 @@ function tryRestoreSession() {
     startPolling();
   }
   return true;
+}
+
+/* ============================================================
+   BAIXA DE ESTOQUE — executada pelo cliente autenticado via SDK
+   (o SDK já possui o token do usuário logado, que satisfaz as
+   regras do Firestore: allow write if request.auth != null)
+
+   Idempotência: lê stockDecremented do pedido antes de agir.
+   Se já for true, aborta. Caso contrário, marca true e subtrai.
+   Estoque nunca fica negativo: Math.max(0, atual - qty).
+   ============================================================ */
+async function _decrementStockOnce(orderId, items) {
+  if (!orderId || !items || !items.length) return;
+
+  const db = _checkoutDb;
+
+  /* 1. Lê o pedido para verificar idempotência */
+  const orderSnap = await db.collection('orders').doc(orderId).get();
+  if (!orderSnap.exists) return;
+  if (orderSnap.data().stockDecremented === true) {
+    console.log('[Stock] Estoque já baixado para pedido', orderId, '— ignorando.');
+    return;
+  }
+
+  /* 2. Marca idempotência antes de subtrair */
+  await db.collection('orders').doc(orderId).update({ stockDecremented: true });
+
+  /* 3. Subtrai estoque de cada item atomicamente */
+  for (const item of items) {
+    const productId = item.id || item.productId;
+    const qty       = parseInt(item.qty, 10) || 0;
+    if (!productId || qty <= 0) continue;
+
+    try {
+      await db.runTransaction(async tx => {
+        const prodRef  = db.collection('products').doc(productId);
+        const prodSnap = await tx.get(prodRef);
+        if (!prodSnap.exists) return;
+
+        const data     = prodSnap.data();
+        const current  = data.stock != null
+          ? parseInt(data.stock, 10)
+          : (data.availability === 'available' ? 1 : 0);
+
+        if (current <= 0) return; /* já esgotado */
+
+        const newStock = Math.max(0, current - qty);
+        tx.update(prodRef, { stock: newStock });
+        console.log(`[Stock] Produto ${productId}: ${current} → ${newStock} (−${qty})`);
+      });
+    } catch (e) {
+      console.error('[Stock] Erro na transação do produto', productId, ':', e.message);
+    }
+  }
+
+  console.log('[Stock] Baixa concluída para pedido', orderId);
 }
 
 /* ============================================================

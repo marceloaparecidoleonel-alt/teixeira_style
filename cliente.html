@@ -89,7 +89,7 @@
 
       <section class="cliente-pedidos">
         <h2>Meus Pedidos</h2>
-        <p class="cliente-empty">Você ainda não possui pedidos.</p>
+        <div id="ordersList" class="orders-list"></div>
       </section>
 
       <section class="cliente-actions">
@@ -109,6 +109,7 @@
   <script src="js/cart.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/cliente.js"></script>
+  <script src="js/pedidos.js"></script>
   <script>
     /* Painel: clique no avatar ou nome → trocar de conta; Sair → logout normal */
     document.addEventListener('click', function(e) {
