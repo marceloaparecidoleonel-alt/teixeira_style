@@ -181,7 +181,7 @@ module.exports = async function handler(req, res) {
 
     /* Baixa estoque somente quando aprovado — idempotente */
     if (mpStatus === 'approved') {
-      const projectId = process.env.FIREBASE_PROJECT_ID;
+      const projectId = process.env.FIREBASE_PROJECT_ID || 'teixeira-style';
       if (projectId) {
         const orderRes = await firestoreGet(projectId, 'orders', orderId);
         if (orderRes.status === 200) {

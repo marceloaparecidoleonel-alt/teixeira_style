@@ -2,8 +2,16 @@
    TEIXEIRA STYLE — Checkout (PIX via Mercado Pago)
    ============================================================ */
 
-/* db é declarado por cart.js no mesmo escopo global — não redeclarar */
-const _checkoutDb = window.fbDb;
+/* Getter dinâmico: evita race condition onde window.fbDb é undefined
+   no momento do parse do script mas já está disponível quando as
+   funções são chamadas. */
+const _checkoutDb = new Proxy({}, {
+  get(_, prop) {
+    const db = window.fbDb;
+    if (!db) throw new Error('[Checkout] Firebase ainda não inicializado');
+    return typeof db[prop] === 'function' ? db[prop].bind(db) : db[prop];
+  }
+});
 /* Em localhost o Live Server (porta 5500) não processa /api — redireciona para o
    Express local na porta 3000. Em produção (Vercel) usa mesmo domínio. */
 const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
@@ -588,7 +596,8 @@ function tryRestoreSession() {
 async function _decrementStockOnce(orderId, items) {
   if (!orderId || !items || !items.length) return;
 
-  const db = _checkoutDb;
+  const db = window.fbDb;
+  if (!db) { console.warn('[Stock] Firebase não pronto, abortando baixa de estoque'); return; }
 
   /* 1. Lê o pedido para verificar idempotência */
   const orderSnap = await db.collection('orders').doc(orderId).get();
