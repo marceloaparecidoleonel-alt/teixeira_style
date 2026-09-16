@@ -560,10 +560,14 @@ function initSearch() {
     if (q === _lastQ) return;
     _lastQ = q;
     try {
-      const snap = await window.fbDb.collection('products').get();
+      const snap = await window.fbDb.collection('products')
+        .where('status', '==', 'active').get();
       const results = [];
       snap.forEach(doc => {
         const d = doc.data();
+        /* Oculta produtos sem estoque */
+        const stock = d.stock != null ? parseInt(d.stock, 10) : (d.availability === 'available' ? 1 : 0);
+        if (stock <= 0) return;
         const name = (d.name || d.nome || '').toLowerCase();
         const desc = (d.description || d.descricao || '').toLowerCase();
         const cat  = (d.category || d.categoria || '').toLowerCase();
