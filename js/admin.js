@@ -471,6 +471,14 @@ document.getElementById('productSearch')?.addEventListener('input', function () 
 document.getElementById('productCatFilter')?.addEventListener('change', function () {
   renderProductsTable(this.value ? allProducts.filter(p => p.category_id === this.value) : allProducts);
 });
+document.getElementById('productStatusFilter')?.addEventListener('change', function () {
+  const val = this.value;
+  if (!val) { renderProductsTable(allProducts); return; }
+  renderProductsTable(allProducts.filter(p => {
+    const stock = p.stock != null ? parseInt(p.stock, 10) : (p.availability === 'available' ? 1 : 0);
+    return val === 'in_stock' ? stock > 0 : stock <= 0;
+  }));
+});
 
 /* ============================================================
    CONTADOR DE LIMITES — atualiza o span no painel de produtos
