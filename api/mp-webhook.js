@@ -32,49 +32,98 @@ function mpGetPayment(paymentId) {
   });
 }
 
-/* Atualiza o pedido no Firestore via REST API (sem SDK no serverless) */
-function firestoreUpdate(orderId, fields) {
+/* ---- Firestore REST: GET de um documento ---- */
+function firestoreGet(projectId, collection, docId) {
   return new Promise((resolve, reject) => {
-    const projectId = process.env.FIREBASE_PROJECT_ID || 'teixeira-style';
-    const token     = process.env.FIREBASE_SERVICE_ACCOUNT_TOKEN;
-
-    /* Se não há token de serviço, usa a API pública de update com campo de merge */
-    const payload = JSON.stringify({
-      fields: Object.fromEntries(
-        Object.entries(fields).map(([k, v]) => {
-          if (typeof v === 'string')  return [k, { stringValue: v }];
-          if (typeof v === 'number')  return [k, { doubleValue: v }];
-          if (typeof v === 'boolean') return [k, { booleanValue: v }];
-          return [k, { nullValue: null }];
-        })
-      )
+    const path = `/v1/projects/${projectId}/databases/(default)/documents/${collection}/${docId}`;
+    const req = https.request({ hostname: 'firestore.googleapis.com', path, method: 'GET' }, res => {
+      let data = '';
+      res.on('data', c => { data += c; });
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
+        catch (e) { reject(e); }
+      });
     });
+    req.on('error', reject);
+    req.end();
+  });
+}
 
-    const updateMask = Object.keys(fields).map(k => `updateMask.fieldPaths=${k}`).join('&');
-    const path = `/v1/projects/${projectId}/databases/(default)/documents/orders/${orderId}?${updateMask}`;
+/* ---- Firestore REST: PATCH (merge) de campos em um documento ---- */
+function firestorePatch(projectId, collection, docId, fields) {
+  return new Promise((resolve, reject) => {
+    const encoded = Object.fromEntries(
+      Object.entries(fields).map(([k, v]) => {
+        if (typeof v === 'string')  return [k, { stringValue: v }];
+        if (typeof v === 'number')  return [k, { integerValue: String(Math.round(v)) }];
+        if (typeof v === 'boolean') return [k, { booleanValue: v }];
+        return [k, { nullValue: null }];
+      })
+    );
+    const payload = JSON.stringify({ fields: encoded });
+    const mask    = Object.keys(fields).map(k => `updateMask.fieldPaths=${encodeURIComponent(k)}`).join('&');
+    const path    = `/v1/projects/${projectId}/databases/(default)/documents/${collection}/${docId}?${mask}`;
 
-    const headers = {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload)
-    };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const options = {
+    const req = https.request({
       hostname: 'firestore.googleapis.com',
       path,
       method: 'PATCH',
-      headers
-    };
-
-    const req = https.request(options, res => {
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
+    }, res => {
       let data = '';
-      res.on('data', chunk => { data += chunk; });
+      res.on('data', c => { data += c; });
       res.on('end', () => resolve({ status: res.statusCode }));
     });
     req.on('error', reject);
     req.write(payload);
     req.end();
   });
+}
+
+/* Alias para compatibilidade com a lógica de update do pedido */
+function firestoreUpdate(orderId, fields) {
+  const projectId = process.env.FIREBASE_PROJECT_ID || 'teixeira-style';
+  return firestorePatch(projectId, 'orders', orderId, fields);
+}
+
+/* ============================================================
+   decrementStock — mesma lógica do mp-payment-status.js
+   Idempotente: stockDecremented=true impede dupla baixa.
+   Protege contra estoque negativo: Math.max(0, stock - qty)
+   ============================================================ */
+async function decrementStock(projectId, orderId, items) {
+  const orderRes = await firestoreGet(projectId, 'orders', orderId);
+  if (orderRes.status !== 200) {
+    console.warn(`[Webhook/Stock] Pedido ${orderId} não encontrado`);
+    return;
+  }
+  const orderFields = orderRes.body.fields || {};
+  if (orderFields.stockDecremented?.booleanValue === true) {
+    console.log(`[Webhook/Stock] Pedido ${orderId} já teve estoque baixado. Ignorando.`);
+    return;
+  }
+
+  await firestorePatch(projectId, 'orders', orderId, { stockDecremented: true });
+
+  for (const item of items) {
+    const productId = item.id || item.productId;
+    const qty       = parseInt(item.qty, 10) || 0;
+    if (!productId || qty <= 0) continue;
+    try {
+      const prodRes = await firestoreGet(projectId, 'products', productId);
+      if (prodRes.status !== 200) { console.warn(`[Webhook/Stock] Produto ${productId} não encontrado.`); continue; }
+      const prodFields   = prodRes.body.fields || {};
+      const stockField   = prodFields.stock;
+      const currentStock = stockField ? parseInt(stockField.integerValue || stockField.doubleValue || 0, 10) : 0;
+      if (currentStock <= 0) { console.warn(`[Webhook/Stock] Produto ${productId} já com estoque 0.`); continue; }
+      const newStock = Math.max(0, currentStock - qty);
+      await firestorePatch(projectId, 'products', productId, { stock: newStock });
+      console.log(`[Webhook/Stock] Produto ${productId}: ${currentStock} → ${newStock} (−${qty})`);
+    } catch (e) {
+      console.error(`[Webhook/Stock] Erro produto ${productId}:`, e.message);
+    }
+  }
+  console.log(`[Webhook/Stock] Baixa concluída para pedido ${orderId}`);
 }
 
 module.exports = async function handler(req, res) {
@@ -129,6 +178,29 @@ module.exports = async function handler(req, res) {
       mercadopagoPaymentId: String(paymentId),
       paidAt:               mpStatus === 'approved' ? new Date().toISOString() : ''
     });
+
+    /* Baixa estoque somente quando aprovado — idempotente */
+    if (mpStatus === 'approved') {
+      const projectId = process.env.FIREBASE_PROJECT_ID;
+      if (projectId) {
+        const orderRes = await firestoreGet(projectId, 'orders', orderId);
+        if (orderRes.status === 200) {
+          const rawItems = orderRes.body.fields?.items?.arrayValue?.values || [];
+          const items = rawItems.map(v => {
+            const f = v.mapValue?.fields || {};
+            return {
+              id:  f.id?.stringValue || f.productId?.stringValue || '',
+              qty: parseInt(f.qty?.integerValue || f.qty?.doubleValue || 1, 10)
+            };
+          });
+          if (items.length) {
+            decrementStock(projectId, orderId, items).catch(e =>
+              console.error('[Webhook/Stock] decrementStock error:', e.message)
+            );
+          }
+        }
+      }
+    }
 
     console.log(`[Webhook] Pedido ${orderId} atualizado → status: ${orderStatus}`);
     return res.status(200).json({ received: true });
