@@ -11,11 +11,12 @@ const API_BASE = (location.hostname === 'localhost' || location.hostname === '12
   : '';
 
 /* ---- Estado da sessão de pagamento ---- */
-let _orderId      = null;
-let _paymentId    = null;
-let _pollInterval = null;
-let _orderItems   = null;
-let _orderTotal   = 0;
+let _orderId         = null;
+let _paymentId       = null;
+let _pollInterval    = null;
+let _orderItems      = null;
+let _orderTotal      = 0;
+let _isCreatingOrder = false; /* guarda contra duplo clique */
 
 /* Chave de sessão para persistência durante reload */
 const _SESSION_KEY = 'ts_checkout_session';
@@ -145,6 +146,9 @@ function validateFields() {
    FINALIZAR PEDIDO
    ============================================================ */
 document.getElementById('finishOrder')?.addEventListener('click', async () => {
+  /* Proteção contra duplo clique / chamada simultânea */
+  if (_isCreatingOrder) return;
+
   /* Aguarda auth estar pronto (firebase.auth() é assíncrono) */
   if (!window.__authReady) {
     await new Promise(r => {
@@ -173,7 +177,12 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
     return;
   }
 
+  /* Garante que qualquer sessão pendente abandonada seja descartada antes de criar novo pedido */
+  clearSession();
+  if (_pollInterval) { clearInterval(_pollInterval); _pollInterval = null; }
+
   /* Valida estoque atual no Firestore para cada item do carrinho */
+  _isCreatingOrder = true;
   const btn = document.getElementById('finishOrder');
   btn.disabled    = true;
   btn.textContent = 'Verificando estoque...';
@@ -182,28 +191,28 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
       const qty = parseInt(item.qty, 10) || 0;
       if (qty < 1) {
         alert(`Quantidade inválida para o produto "${item.name}".`);
-        btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
+        btn.disabled = false; btn.textContent = 'Finalizar pedido'; _isCreatingOrder = false; return;
       }
       const snap = await _checkoutDb.collection('products').doc(item.id).get();
       if (!snap.exists) {
         alert(`Produto "${item.name}" não encontrado. Remova-o do carrinho e tente novamente.`);
-        btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
+        btn.disabled = false; btn.textContent = 'Finalizar pedido'; _isCreatingOrder = false; return;
       }
       const pData = snap.data();
       const stock = pData.stock != null ? parseInt(pData.stock, 10) : (pData.availability === 'available' ? 1 : 0);
       if (stock <= 0) {
         alert(`"${item.name}" está esgotado. Remova-o do carrinho para continuar.`);
-        btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
+        btn.disabled = false; btn.textContent = 'Finalizar pedido'; _isCreatingOrder = false; return;
       }
       if (qty > stock) {
         alert(`"${item.name}": você tem ${qty} no carrinho, mas o estoque disponível é ${stock}. Ajuste a quantidade e tente novamente.`);
-        btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
+        btn.disabled = false; btn.textContent = 'Finalizar pedido'; _isCreatingOrder = false; return;
       }
     }
   } catch (stockErr) {
     console.error('[Checkout] Erro ao verificar estoque:', stockErr);
     alert('Não foi possível verificar o estoque. Verifique sua conexão e tente novamente.');
-    btn.disabled = false; btn.textContent = 'Finalizar pedido'; return;
+    btn.disabled = false; btn.textContent = 'Finalizar pedido'; _isCreatingOrder = false; return;
   }
 
   const fullName    = document.getElementById('fullName').value.trim();
@@ -259,6 +268,7 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
     alert('Erro ao processar pedido. Tente novamente.');
     btn.disabled    = false;
     btn.textContent = 'Finalizar pedido';
+    _isCreatingOrder = false;
   }
 });
 
@@ -301,18 +311,24 @@ async function initPixPayment(order, cart) {
       qrCode:       data.qrCode       || null,
       qrCodeBase64: data.qrCodeBase64 || null,
       expiresAt:    data.expiresAt    || null,
+      savedAt:      Date.now(),         /* timestamp para detectar sessão expirada */
       status:       'pending'
     });
 
-    clearCart();
+    await clearCart();
     showPixScreen(data);
     startPolling();
+    /* Libera guarda somente depois de tudo estar montado */
+    _isCreatingOrder = false;
 
   } catch (err) {
     console.error('[PIX] Erro ao criar pagamento:', err);
+    /* Limpa sessão parcial para não contaminar próxima tentativa */
+    clearSession();
     alert(`Erro ao gerar PIX: ${err.message}. Tente novamente.`);
     const btn = document.getElementById('finishOrder');
     if (btn) { btn.disabled = false; btn.textContent = 'Finalizar pedido'; }
+    _isCreatingOrder = false;
   }
 }
 
@@ -503,20 +519,37 @@ function tryRestoreSession() {
   const sess = loadSession();
   if (!sess || !sess.paymentId || !sess.orderId) return false;
 
+  /* Sessão já aprovada: não mostrar tela PIX de novo, apenas limpar */
+  if (sess.status === 'approved') {
+    clearSession();
+    return false;
+  }
+
+  /* Sessão muito antiga (> 30 min sem pagar) = expirada, descarta */
+  const MAX_AGE_MS = 30 * 60 * 1000;
+  if (sess.savedAt && (Date.now() - sess.savedAt) > MAX_AGE_MS) {
+    console.log('[Checkout] Sessão PIX expirada — descartando.');
+    /* Marca pedido como cancelado no Firestore (sem bloquear) */
+    _checkoutDb.collection('orders').doc(sess.orderId).update({
+      status:        'cancelado',
+      paymentStatus: 'expired'
+    }).catch(() => {});
+    clearSession();
+    return false;
+  }
+
   _orderId    = sess.orderId;
   _paymentId  = sess.paymentId;
   _orderItems = sess.orderItems || [];
   _orderTotal = sess.orderTotal || 0;
 
   showPixScreen({
-    total:       sess.orderTotal,
-    qrCode:      sess.qrCode,
+    total:        sess.orderTotal,
+    qrCode:       sess.qrCode,
     qrCodeBase64: sess.qrCodeBase64
   });
 
-  if (sess.status !== 'approved') {
-    startPolling();
-  }
+  startPolling();
   return true;
 }
 
