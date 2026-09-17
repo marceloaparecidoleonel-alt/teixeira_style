@@ -1471,29 +1471,12 @@ function renderOrdersTable(docs) {
       <td>${payLabel}</td>
       <td>
         <span class="order-status-badge" style="display:inline-block;padding:3px 10px;border-radius:4px;font-size:0.75rem;font-weight:600;background:${bc}22;color:${bc};border:1px solid ${bc}55;white-space:nowrap">${bl}</span>
-        <br>
-        <select class="status-select" data-id="${doc.id}" style="font-size:0.75rem;margin-top:4px">
-          <option value="aguardando_confirmacao" ${st==='aguardando_confirmacao'?'selected':''}>Aguardando confirmação</option>
-          <option value="aguardando_pagamento"   ${st==='aguardando_pagamento'?'selected':''}>Aguardando pagamento</option>
-          <option value="pago"      ${st==='pago'?'selected':''}>Pago</option>
-          <option value="enviado"   ${st==='enviado'?'selected':''}>Enviado</option>
-          <option value="entregue"  ${st==='entregue'?'selected':''}>Entregue</option>
-          <option value="cancelado" ${st==='cancelado'?'selected':''}>Cancelado</option>
-        </select>
       </td>
       <td>${d}</td>
       <td><button class="action-btn" onclick="window.open('https://wa.me/${String(o.whatsapp||'').replace(/\D/g,'')}','_blank')">WhatsApp</button></td>
     </tr>`;
   }).join('');
 
-  tbody.querySelectorAll('.status-select').forEach(sel => {
-    sel.addEventListener('change', async () => {
-      try {
-        await db.collection('orders').doc(sel.dataset.id).update({ status: sel.value, updated_at: firebase.firestore.FieldValue.serverTimestamp() });
-        showToast('Status atualizado!');
-      } catch { showToast('Erro ao atualizar status.', 'error'); }
-    });
-  });
 }
 
 function loadOrders() {
