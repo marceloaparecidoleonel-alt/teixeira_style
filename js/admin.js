@@ -1538,25 +1538,45 @@ function loadOrders() {
 
   _ordersUnsubscribe = db.collection('orders')
     .orderBy('created_at', 'desc')
-    .onSnapshot(snap => {
+    .onSnapshot(async snap => {
       /* Cancela automaticamente pedidos aguardando pagamento há mais de 30 min */
-      const EXPIRY_MS = 30 * 60 * 1000;
-      const now       = Date.now();
+      const EXPIRY_MS  = 30 * 60 * 1000;
+      const now        = Date.now();
+      const updates    = [];
+
       snap.docs.forEach(doc => {
         const o = doc.data();
         if (o.status !== 'aguardando_pagamento') return;
         const createdMs = o.created_at ? o.created_at.seconds * 1000 : null;
         if (!createdMs) return;
-        if ((now - createdMs) >= EXPIRY_MS) {
-          db.collection('orders').doc(doc.id).update({
-            status:      'cancelado',
-            paymentStatus: 'expired',
-            cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
-          }).catch(e => console.warn('[Orders] Erro ao cancelar expirado:', e.message));
+        const age = now - createdMs;
+        console.log(`[Orders] Pedido ${doc.id} aguardando há ${Math.round(age/60000)} min (limite: 30 min)`);
+        if (age >= EXPIRY_MS) {
+          console.log(`[Orders] Cancelando pedido expirado: ${doc.id}`);
+          updates.push(
+            db.collection('orders').doc(doc.id).update({
+              status:        'cancelado',
+              paymentStatus: 'expired',
+              cancelledAt:   firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+              console.log(`[Orders] Pedido ${doc.id} cancelado com sucesso.`);
+            }).catch(e => {
+              console.error(`[Orders] ERRO ao cancelar ${doc.id}:`, e.code, e.message);
+            })
+          );
         }
       });
-      renderOrdersTable(snap.docs);
-    }, () => {
+
+      if (updates.length) {
+        /* Aguarda updates e re-busca para garantir status atualizado na tabela */
+        await Promise.allSettled(updates);
+        const freshSnap = await db.collection('orders').orderBy('created_at', 'desc').get();
+        renderOrdersTable(freshSnap.docs);
+      } else {
+        renderOrdersTable(snap.docs);
+      }
+    }, err => {
+      console.error('[Orders] Erro no snapshot:', err);
       if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#e74c3c">Erro ao carregar pedidos</td></tr>';
     });
 }
