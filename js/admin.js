@@ -1539,6 +1539,22 @@ function loadOrders() {
   _ordersUnsubscribe = db.collection('orders')
     .orderBy('created_at', 'desc')
     .onSnapshot(snap => {
+      /* Cancela automaticamente pedidos aguardando pagamento há mais de 30 min */
+      const EXPIRY_MS = 30 * 60 * 1000;
+      const now       = Date.now();
+      snap.docs.forEach(doc => {
+        const o = doc.data();
+        if (o.status !== 'aguardando_pagamento') return;
+        const createdMs = o.created_at ? o.created_at.seconds * 1000 : null;
+        if (!createdMs) return;
+        if ((now - createdMs) >= EXPIRY_MS) {
+          db.collection('orders').doc(doc.id).update({
+            status:      'cancelado',
+            paymentStatus: 'expired',
+            cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+          }).catch(e => console.warn('[Orders] Erro ao cancelar expirado:', e.message));
+        }
+      });
       renderOrdersTable(snap.docs);
     }, () => {
       if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#e74c3c">Erro ao carregar pedidos</td></tr>';
