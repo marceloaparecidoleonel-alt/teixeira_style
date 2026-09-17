@@ -1502,6 +1502,21 @@ let _ordersUnsubscribe = null;
 function renderOrdersTable(docs) {
   const tbody = document.getElementById('ordersBody');
   if (!tbody) return;
+
+  /* Contador diário: pedidos criados hoje (não cancelados) */
+  const countEl = document.getElementById('ordersDailyCount');
+  if (countEl) {
+    const todayStr = new Date().toLocaleDateString('pt-BR'); /* DD/MM/YYYY no fuso local */
+    const todayCount = docs.filter(doc => {
+      const o = doc.data();
+      if (o.status === 'cancelado') return false;
+      if (!o.created_at) return false;
+      const d = new Date(o.created_at.seconds * 1000).toLocaleDateString('pt-BR');
+      return d === todayStr;
+    }).length;
+    countEl.textContent = `Hoje: ${todayCount} pedido${todayCount !== 1 ? 's' : ''}`;
+  }
+
   if (!docs.length) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888">Nenhum pedido</td></tr>';
     return;
