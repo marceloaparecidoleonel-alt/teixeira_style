@@ -3,7 +3,15 @@
    ============================================================ */
 
 const auth    = window.fbAuth;
-const db      = window.fbDb;
+/* Getter dinâmico: evita race condition onde window.fbDb é undefined
+   no momento do parse mas já está pronto quando as funções executam. */
+const db = new Proxy({}, {
+  get(_, prop) {
+    const _db = window.fbDb;
+    if (!_db) throw new Error('[Admin] Firebase não inicializado ainda');
+    return typeof _db[prop] === 'function' ? _db[prop].bind(_db) : _db[prop];
+  }
+});
 
 /* ---- Cloudinary config (apenas Cloud Name e Upload Preset — NUNCA coloque API Secret aqui) ---- */
 const CLOUDINARY_CLOUD_NAME    = 'dvin8hkmv';
@@ -227,18 +235,17 @@ async function loadDashboard() {
     }
   }
 
-  /* ---- Consultas paralelas — 1 lote único ---- */
+  /* ---- Consultas principais — separadas de activity_logs para isolar erros ---- */
   let prodSnap, catSnap, clientSnap, gallSnap, actSnap;
   try {
-    [prodSnap, catSnap, clientSnap, gallSnap, actSnap] = await Promise.all([
+    [prodSnap, catSnap, clientSnap, gallSnap] = await Promise.all([
       db.collection('products').get(),
       db.collection('categories').get(),
       db.collection('clients').get(),
-      db.collection('gallery').get(),
-      db.collection('activity_logs').orderBy('created_at', 'desc').limit(8).get()
+      db.collection('gallery').get()
     ]);
   } catch (err) {
-    console.error('Dashboard — erro ao carregar dados:', err);
+    console.error('Dashboard — erro ao carregar dados principais:', err);
     ['products','gallery','clients','categories'].forEach(k => {
       const el = document.querySelector(`[data-stat="${k}"]`);
       if (el) el.textContent = '—';
@@ -248,6 +255,14 @@ async function loadDashboard() {
       if (el) { el.textContent = 'Erro ao carregar'; el.className = 'stat-card__change'; }
     });
     return;
+  }
+
+  /* activity_logs é opcional — falha silenciosa não derruba o dashboard */
+  try {
+    actSnap = await db.collection('activity_logs').orderBy('created_at', 'desc').limit(8).get();
+  } catch (e) {
+    console.warn('Dashboard — activity_logs indisponível:', e.message);
+    actSnap = { empty: true, docs: [] };
   }
 
   /* ---- Cards de estatísticas ---- */
