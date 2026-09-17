@@ -1,5 +1,11 @@
 {
   "version": 2,
+  "crons": [
+    {
+      "path": "/api/cancel-expired-orders",
+      "schedule": "0 * * * *"
+    }
+  ],
   "builds": [
     {
       "src": "api/**/*.js",
@@ -34,6 +40,10 @@
     {
       "src": "/api/mp-webhook",
       "dest": "/api/mp-webhook.js"
+    },
+    {
+      "src": "/api/cancel-expired-orders",
+      "dest": "/api/cancel-expired-orders.js"
     },
     {
       "src": "/(.*)",

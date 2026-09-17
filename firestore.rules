@@ -70,7 +70,8 @@ service cloud.firestore {
                     || (request.resource.data.diff(resource.data).affectedKeys()
                         .hasOnly(['status','paymentStatus','paidAt',
                                   'stockDecremented','mercadopagoPaymentId',
-                                  'paymentProvider','paymentMethod','externalReference']));
+                                  'paymentProvider','paymentMethod','externalReference',
+                                  'cancelledAt']));
       allow delete: if request.auth != null;
     }
 
