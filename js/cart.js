@@ -3,7 +3,8 @@
    Cada carrinho é isolado pelo UID do Firebase Authentication.
    ============================================================ */
 
-const db = window.fbDb;
+/* Getter dinâmico — evita race condition onde window.fbDb é undefined no parse */
+function _db() { return window.fbDb || null; }
 
 const CART_KEY = 'ts_cart';
 
@@ -85,6 +86,7 @@ async function clearCart() {
   if (typeof updateCartCount === 'function') updateCartCount();
   if (typeof renderCart === 'function') renderCart();
   const user = window.currentUser;
+  const db = _db();
   if (user && db) {
     try {
       await db.collection('carts').doc(user.uid).set(
@@ -101,6 +103,7 @@ function cartTotal() {
 /* ---- Sync com Firestore quando logado ---- */
 async function syncCartToFirestore() {
   const user = window.currentUser || (window.fbAuth && window.fbAuth.currentUser);
+  const db = _db();
   if (!user || !db) return;
   try {
     await db.collection('carts').doc(user.uid).set({
@@ -114,6 +117,7 @@ async function syncCartToFirestore() {
    Isso impede que dados da conta anterior contaminem a sessão da nova conta. */
 async function loadCartFromFirestore() {
   const user = window.currentUser;
+  const db = _db();
   if (!user || !db) return;
   /* Limpa estado local imediatamente para evitar vazamento entre contas */
   localStorage.removeItem(CART_KEY);
