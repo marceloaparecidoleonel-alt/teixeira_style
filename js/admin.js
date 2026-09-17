@@ -1,6 +1,7 @@
 /* ============================================================
    TEIXEIRA STYLE — ADMIN PANEL (Firebase + Cloudinary)
    ============================================================ */
+console.log('%c[Admin] v10 carregado', 'color:#C9A66B;font-weight:bold');
 
 const auth    = window.fbAuth;
 /* Getter dinâmico: evita race condition onde window.fbDb é undefined
