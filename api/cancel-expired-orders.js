@@ -68,7 +68,11 @@ function firestorePatch(projectId, collection, docId, fields) {
    HANDLER PRINCIPAL
    ============================================================ */
 module.exports = async function handler(req, res) {
-  /* Segurança: só aceita chamadas do próprio Vercel Cron ou com token secreto */
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  /* Segurança: só restringe se CRON_SECRET estiver configurado */
   const authHeader = req.headers['authorization'] || '';
   const cronSecret = process.env.CRON_SECRET || '';
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {

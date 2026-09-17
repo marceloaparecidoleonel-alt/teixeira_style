@@ -1534,6 +1534,12 @@ function loadOrders() {
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">Carregando...</td></tr>';
 
+  /* Chama o endpoint serverless para cancelar expirados — confiável independente de cache JS */
+  fetch('/api/cancel-expired-orders', { method: 'GET' })
+    .then(r => r.json())
+    .then(d => console.log('[Orders] Cron cancelamento:', d))
+    .catch(e => console.warn('[Orders] Endpoint cancel-expired-orders:', e.message));
+
   if (_ordersUnsubscribe) { _ordersUnsubscribe(); _ordersUnsubscribe = null; }
 
   _ordersUnsubscribe = db.collection('orders')
