@@ -419,7 +419,10 @@ function _timeAgo(ts) {
 /* ============================================================
    PRODUCTS
    ============================================================ */
-let allProducts = [];
+let allProducts         = [];
+let _filteredProducts   = [];
+let _productsPage       = 1;
+const PRODUCTS_PER_PAGE = 10;
 
 async function loadProducts() {
   const tbody = document.getElementById('productsBody');
@@ -434,20 +437,39 @@ async function loadProducts() {
       return acc + (Array.isArray(p.images) ? p.images.length : (p.image_url ? 1 : 0));
     }, 0);
     updateLimitsDisplay(allProducts.length, totalImages);
-    renderProductsTable(allProducts);
+    _filteredProducts = [...allProducts];
+    _productsPage = 1;
+    renderProductsTable(_filteredProducts);
   } catch {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#e74c3c">Erro ao carregar</td></tr>';
   }
 }
 
 function renderProductsTable(products) {
-  const tbody = document.getElementById('productsBody');
+  _filteredProducts = products;
+  const tbody    = document.getElementById('productsBody');
+  const countEl  = document.getElementById('productsCount');
+  const pagEl    = document.getElementById('productsPagination');
   if (!tbody) return;
-  if (!products.length) {
+
+  const total = products.length;
+  const pages = Math.ceil(total / PRODUCTS_PER_PAGE) || 1;
+  if (_productsPage > pages) _productsPage = 1;
+
+  const start = (_productsPage - 1) * PRODUCTS_PER_PAGE;
+  const slice = products.slice(start, start + PRODUCTS_PER_PAGE);
+
+  if (countEl) countEl.textContent = total
+    ? `Mostrando ${start + 1}–${Math.min(start + slice.length, total)} de ${total} produto${total !== 1 ? 's' : ''}`
+    : '';
+
+  if (!slice.length) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888">Nenhum produto</td></tr>';
+    if (pagEl) pagEl.innerHTML = '';
     return;
   }
-  tbody.innerHTML = products.map(p => `
+
+  tbody.innerHTML = slice.map(p => `
     <tr>
       <td><input type="checkbox" /></td>
       <td>
@@ -467,6 +489,24 @@ function renderProductsTable(products) {
       </td>
     </tr>
   `).join('');
+
+  /* Paginação */
+  if (pagEl) {
+    let btns = '';
+    for (let i = 1; i <= pages; i++) {
+      if (pages > 7 && i > 2 && i < pages - 1 && Math.abs(i - _productsPage) > 1) {
+        if (i === 3 || i === pages - 2) btns += `<span class="page-ellipsis">…</span>`;
+        continue;
+      }
+      btns += `<button class="page-btn${i === _productsPage ? ' active' : ''}" onclick="_goProductPage(${i})">${i}</button>`;
+    }
+    pagEl.innerHTML = btns;
+  }
+}
+
+function _goProductPage(n) {
+  _productsPage = n;
+  renderProductsTable(_filteredProducts);
 }
 
 async function populateCatFilter() {
@@ -477,23 +517,26 @@ async function populateCatFilter() {
     snap.docs.map(d => `<option value="${d.id}">${d.data().name}</option>`).join('');
 }
 
-document.getElementById('productSearch')?.addEventListener('input', function () {
-  const q = this.value.toLowerCase();
-  renderProductsTable(allProducts.filter(p =>
-    p.name.toLowerCase().includes(q) || (p.material||'').toLowerCase().includes(q)
-  ));
-});
-document.getElementById('productCatFilter')?.addEventListener('change', function () {
-  renderProductsTable(this.value ? allProducts.filter(p => p.category_id === this.value) : allProducts);
-});
-document.getElementById('productStatusFilter')?.addEventListener('change', function () {
-  const val = this.value;
-  if (!val) { renderProductsTable(allProducts); return; }
-  renderProductsTable(allProducts.filter(p => {
+function _applyProductFilters() {
+  const q      = (document.getElementById('productSearch')?.value || '').toLowerCase();
+  const catVal = document.getElementById('productCatFilter')?.value  || '';
+  const stVal  = document.getElementById('productStatusFilter')?.value || '';
+
+  let filtered = allProducts;
+  if (q)      filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || (p.material||'').toLowerCase().includes(q));
+  if (catVal) filtered = filtered.filter(p => p.category_id === catVal);
+  if (stVal)  filtered = filtered.filter(p => {
     const stock = p.stock != null ? parseInt(p.stock, 10) : (p.availability === 'available' ? 1 : 0);
-    return val === 'in_stock' ? stock > 0 : stock <= 0;
-  }));
-});
+    return stVal === 'in_stock' ? stock > 0 : stock <= 0;
+  });
+
+  _productsPage = 1;
+  renderProductsTable(filtered);
+}
+
+document.getElementById('productSearch')?.addEventListener('input', _applyProductFilters);
+document.getElementById('productCatFilter')?.addEventListener('change', _applyProductFilters);
+document.getElementById('productStatusFilter')?.addEventListener('change', _applyProductFilters);
 
 /* ============================================================
    CONTADOR DE LIMITES — atualiza o span no painel de produtos
