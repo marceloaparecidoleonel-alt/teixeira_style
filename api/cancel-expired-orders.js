@@ -8,7 +8,7 @@
 const https = require('https');
 
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'teixeira-style';
-const EXPIRY_MS  = 60 * 60 * 1000; /* 1 hora em milissegundos */
+const EXPIRY_MS  = 30 * 60 * 1000; /* 30 minutos em milissegundos */
 
 /* ---- Firestore REST: runQuery (para buscar múltiplos docs com filtro) ---- */
 function firestoreQuery(projectId, body) {
