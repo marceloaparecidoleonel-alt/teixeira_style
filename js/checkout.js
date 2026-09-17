@@ -270,6 +270,17 @@ document.getElementById('finishOrder')?.addEventListener('click', async () => {
       created_at:  firebase.firestore.FieldValue.serverTimestamp()
     }).catch(() => {});
 
+    /* Atualiza dados de endereço/contato no perfil do cliente (para o painel admin) */
+    _checkoutDb.collection('clients').doc(window.currentUser.uid).set({
+      telefone:      whatsapp,
+      cidade:        city,
+      estado:        estado,
+      endereco:      address ? `${address}${numero ? ', ' + numero : ''}` : '',
+      complemento:   complemento,
+      cep:           cep,
+      ultimo_acesso: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(() => {});
+
     await initPixPayment(order, cart);
 
   } catch (err) {
@@ -503,14 +514,30 @@ async function buildWaLink(waBtn) {
     return `• ${qty}x ${i.name}${i.size ? ' (' + i.size + ')' : ''} - R$ ${(price * qty).toFixed(2).replace('.', ',')}`;
   }).join('\n');
 
+  /* Recupera dados de entrega do formulário (ainda na página) ou da sessão */
+  const fullName    = document.getElementById('fullName')?.value.trim()    || '';
+  const whatsapp    = document.getElementById('whatsapp')?.value.trim()    || '';
+  const address     = document.getElementById('address')?.value.trim()     || '';
+  const numero      = document.getElementById('numero')?.value.trim()      || '';
+  const complemento = document.getElementById('complemento')?.value.trim() || '';
+  const city        = document.getElementById('city')?.value.trim()        || '';
+  const estado      = document.getElementById('estado')?.value.trim()      || '';
+  const cep         = document.getElementById('cep')?.value.trim()         || '';
+
+  const enderecoTexto = address
+    ? `${address}${numero ? ', ' + numero : ''}${complemento && complemento !== 'Sem complemento' ? ' - ' + complemento : ''}, ${city} - ${estado}, CEP: ${cep}`
+    : 'Não informado';
+
   const msg = encodeURIComponent(
     `Olá! Gostaria de confirmar meu pedido na Teixeira Style.\n\n` +
-    `Pedido: ${orderId}\n\n` +
+    `Pedido: ${orderId}\n` +
+    `Cliente: ${fullName || 'Não informado'}\n` +
+    `WhatsApp: ${whatsapp || 'Não informado'}\n\n` +
     `Produtos:\n${itensTexto}\n\n` +
     `Total: R$ ${Number(total).toFixed(2).replace('.', ',')}\n` +
     `Pagamento: PIX\n` +
     `Status: Pago ✅\n\n` +
-    `Gostaria de confirmar com vocês como será feito o frete/forma de entrega.\n\n` +
+    `Endereço de entrega:\n${enderecoTexto}\n\n` +
     `Obrigado!`
   );
 

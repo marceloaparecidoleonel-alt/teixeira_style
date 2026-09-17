@@ -1090,35 +1090,42 @@ async function loadClients() {
     /* 2. Busca todos os pedidos de uma vez — evita N consultas individuais */
     const orderSnap  = await db.collection('orders').get();
 
-    /* 3. Agrupa pedidos por user_id */
+    /* 3. Agrupa pedidos por user_id — captura também dados de endereço do pedido mais recente */
     const ordersByUid = {};
     orderSnap.docs.forEach(doc => {
       const o = doc.data();
       const uid = o.user_id;
       if (!uid) return;
-      if (!ordersByUid[uid]) ordersByUid[uid] = { count: 0, total: 0, last: null };
+      if (!ordersByUid[uid]) ordersByUid[uid] = { count: 0, total: 0, last: null, lastOrder: null, lastTs: 0 };
       ordersByUid[uid].count++;
       ordersByUid[uid].total += Number(o.total) || 0;
       const ts = o.created_at ? o.created_at.seconds : 0;
       if (!ordersByUid[uid].last || ts > ordersByUid[uid].last.seconds) {
         ordersByUid[uid].last = o.created_at;
       }
+      /* Guarda dados de endereço do pedido mais recente */
+      if (ts > ordersByUid[uid].lastTs) {
+        ordersByUid[uid].lastTs    = ts;
+        ordersByUid[uid].lastOrder = o;
+      }
     });
 
-    /* 4. Monta array de clientes enriquecido */
+    /* 4. Monta array de clientes enriquecido — endereço vem do pedido mais recente
+       quando o documento clients não tiver esses dados */
     _allClients = clientSnap.docs.map(doc => {
       const c  = doc.data();
-      const od = ordersByUid[doc.id] || { count: 0, total: 0, last: null };
+      const od = ordersByUid[doc.id] || { count: 0, total: 0, last: null, lastOrder: null };
+      const lo = od.lastOrder || {}; /* dados do pedido mais recente */
       return {
         uid:           doc.id,
-        nome:          c.nome          || '',
-        email:         c.email         || '',
+        nome:          c.nome          || lo.full_name  || '',
+        email:         c.email         || lo.user_email || '',
         foto:          c.foto          || '',
-        telefone:      c.telefone      || '',
-        cidade:        c.cidade        || '',
-        estado:        c.estado        || '',
-        endereco:      c.endereco      || '',
-        cep:           c.cep           || '',
+        telefone:      c.telefone      || lo.whatsapp   || '',
+        cidade:        c.cidade        || lo.city       || '',
+        estado:        c.estado        || lo.estado     || '',
+        endereco:      c.endereco      || (lo.address ? `${lo.address}${lo.numero ? ', ' + lo.numero : ''}${lo.complemento && lo.complemento !== 'Sem complemento' ? ' - ' + lo.complemento : ''}` : ''),
+        cep:           c.cep           || lo.cep        || '',
         criado_em:     c.criado_em     || null,
         ultimo_acesso: c.ultimo_acesso || null,
         pedidos:       od.count,
