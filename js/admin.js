@@ -23,9 +23,9 @@ const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}
    Ajuste aqui para refletir em todo o sistema.
    ============================================================ */
 const CATALOG_LIMITS = {
-  MAX_PRODUCTS:          100,   /* máximo de produtos no catálogo      */
+  MAX_PRODUCTS:          900,   /* máximo de produtos no catálogo      */
   MAX_IMAGES_PER_PRODUCT:  4,   /* máximo de fotos por produto          */
-  MAX_TOTAL_IMAGES:      400,   /* 100 produtos × 4 fotos               */
+  MAX_TOTAL_IMAGES:     3600,   /* 900 produtos × 4 fotos               */
   MAX_IMAGE_SIZE_MB:       5,   /* tamanho máximo por arquivo (MB)      */
   ALLOWED_FORMATS: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 };
