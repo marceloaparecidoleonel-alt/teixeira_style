@@ -6,26 +6,22 @@
       "schedule": "0 * * * *"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/mp-create-payment",
-      "dest": "/api/mp-create-payment.js"
+      "source": "/api/mp-create-payment",
+      "destination": "/api/mp-create-payment.js"
     },
     {
-      "src": "/api/mp-payment-status",
-      "dest": "/api/mp-payment-status.js"
+      "source": "/api/mp-payment-status",
+      "destination": "/api/mp-payment-status.js"
     },
     {
-      "src": "/api/mp-webhook",
-      "dest": "/api/mp-webhook.js"
+      "source": "/api/mp-webhook",
+      "destination": "/api/mp-webhook.js"
     },
     {
-      "src": "/api/cancel-expired-orders",
-      "dest": "/api/cancel-expired-orders.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/api/cancel-expired-orders",
+      "destination": "/api/cancel-expired-orders.js"
     }
   ],
   "headers": [
