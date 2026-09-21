@@ -1,42 +1,50 @@
 {
   "version": 2,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/mp-create-payment",
-      "destination": "/api/mp-create-payment.js"
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     },
     {
-      "source": "/api/mp-payment-status",
-      "destination": "/api/mp-payment-status.js"
+      "src": "**/*.html",
+      "use": "@vercel/static"
     },
     {
-      "source": "/api/mp-webhook",
-      "destination": "/api/mp-webhook.js"
+      "src": "css/**",
+      "use": "@vercel/static"
     },
     {
-      "source": "/api/cancel-expired-orders",
-      "destination": "/api/cancel-expired-orders.js"
+      "src": "js/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "assets/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/mp-create-payment",
+      "dest": "/api/mp-create-payment.js"
+    },
+    {
+      "src": "/api/mp-payment-status",
+      "dest": "/api/mp-payment-status.js"
+    },
+    {
+      "src": "/api/mp-webhook",
+      "dest": "/api/mp-webhook.js"
+    },
+    {
+      "src": "/api/cancel-expired-orders",
+      "dest": "/api/cancel-expired-orders.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ],
   "headers": [
-    {
-      "source": "/js/(.*)\\.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)\\.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
-      ]
-    },
     {
       "source": "/(.*)",
       "headers": [
