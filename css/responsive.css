@@ -310,6 +310,50 @@
 }
 
 /* ============================================================
+   SMALL MOBILE (≤ 430px) — extra tweaks
+   ============================================================ */
+@media (max-width: 430px) {
+  /* Navbar search smaller */
+  .navbar__search-input { width: 120px; }
+
+  /* Hero */
+  .hero__content { margin-bottom: 6rem; }
+
+  /* Footer compact */
+  .footer__top { padding-block: 3rem; }
+  .footer__grid { gap: 2rem; }
+}
+
+/* ============================================================
+   ADMIN SIDEBAR OVERLAY BACKDROP (mobile)
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Backdrop para fechar sidebar ao clicar fora */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 199;
+  }
+  .sidebar-backdrop.visible { display: block; }
+}
+
+/* ============================================================
+   CHECKOUT PAGE — extra mobile fixes
+   ============================================================ */
+@media (max-width: 480px) {
+  /* QR Code PIX proporcional */
+  #qrCodeImg { max-width: 200px; width: 100%; height: auto; }
+
+  /* Campo PIX copia e cola sem overflow */
+  .pix-box { font-size: 0.7rem; word-break: break-all; overflow-wrap: anywhere; }
+
+  /* Botões de pagamento empilhados */
+  .payment-methods { gap: 0.5rem; }
+}
+
+/* ============================================================
    TOUCH DEVICES — disable cursor effects
    ============================================================ */
 @media (hover: none) {

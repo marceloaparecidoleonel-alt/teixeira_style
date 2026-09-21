@@ -286,4 +286,17 @@
   }
   .produto-title { font-size: 2rem; }
   .produto-page { padding: 5rem 1rem 3rem; }
+  .page-produto .navbar__logo { transform: scale(1.6); transform-origin: center; }
+  .produto-gallery__thumbs { gap: 0.4rem; }
+  .produto-thumb { width: 54px; height: 54px; }
+}
+
+@media (max-width: 480px) {
+  .produto-page { padding: 4.5rem 0.75rem 2.5rem; }
+  .produto-title { font-size: 1.75rem; }
+  .produto-price { font-size: 1.6rem; }
+  .page-produto .navbar__logo { transform: scale(1.4); }
+  .produto-actions { gap: 0.5rem; }
+  .produto-btn { font-size: 0.82rem; padding: 0.8rem 0.75rem; }
+  .produto-thumb { width: 48px; height: 48px; }
 }
