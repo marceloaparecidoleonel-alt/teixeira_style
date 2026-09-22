@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-store" />
   <meta name="description" content="Teixeira Style — Moda Streetwear Premium. As melhores peças para quem transforma estilo em identidade." />
   <title>TEIXEIRA STYLE — Streetwear Premium</title>
   <link rel="icon" type="image/png" href="assets/images/logo.png" />
@@ -20,6 +21,8 @@
     .page-index .navbar__panel-link { display: none !important; }
     .page-index .auth-btn__avatar,
     .page-index .auth-btn__name { cursor: pointer; }
+    /* Garante menu fechado antes de qualquer JS carregar (já usa opacity/visibility) */
+    #mobileMenu:not(.open) { pointer-events: none; }
   </style>
 </head>
 <body class="page-index">
@@ -497,9 +500,7 @@
       }
     }, true);
 
-    /* bfcache / menu fix:
-       Ao voltar para home pelo botão "voltar" do browser (bfcache),
-       fecha o menu mobile se estiver aberto e recarrega a página. */
+    /* Fecha menu mobile e reseta estado ao carregar/voltar */
     function closeMobileMenu() {
       var menu = document.getElementById('mobileMenu');
       var burger = document.getElementById('hamburger');
@@ -511,18 +512,12 @@
       document.body.style.overflow = '';
     }
 
-    window.addEventListener('pageshow', function(e) {
-      if (e.persisted) {
-        closeMobileMenu();
-        window.location.reload();
-      }
-    });
+    /* Executa imediatamente no load */
+    closeMobileMenu();
 
-    /* Garante menu fechado sempre que a aba volta ao foco */
-    document.addEventListener('visibilitychange', function() {
-      if (document.visibilityState === 'visible') {
-        closeMobileMenu();
-      }
+    /* bfcache: força reload ao voltar pelo botão "Voltar" do browser */
+    window.addEventListener('pageshow', function(e) {
+      if (e.persisted) { window.location.reload(); }
     });
   </script>
 </body>
