@@ -35,6 +35,9 @@ a { text-decoration: none; color: inherit; }
   border-bottom: 1px solid rgba(255,255,255,0.1);
   z-index: 200;
   overflow: hidden;
+  /* Isola o contexto do marquee para não afetar outros fixed */
+  isolation: isolate;
+  contain: layout style;
 }
 
 .topbar__track { width: 100%; overflow: hidden; height: 100%; display: flex; align-items: center; }
@@ -68,6 +71,8 @@ a { text-decoration: none; color: inherit; }
   z-index: 150;
   display: flex;
   align-items: center;
+  isolation: isolate;
+  contain: layout style;
 }
 
 .navbar__container {
@@ -173,10 +178,11 @@ a { text-decoration: none; color: inherit; }
   left: 0;
   right: 0;
   z-index: 100;
-  background: rgba(11,11,15,0.97);
-  backdrop-filter: blur(12px);
+  /* Fundo sólido: backdrop-filter quebra position:fixed no iOS Safari */
+  background: #0b0b0f;
   border-bottom: 1px solid var(--border);
   padding: 0.9rem 2rem;
+  will-change: transform;
 }
 
 .filters-bar__inner {
