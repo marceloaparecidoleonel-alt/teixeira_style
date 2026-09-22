@@ -97,6 +97,18 @@
 }
 
 /* ============================================================
+   MENU MOBILE — GARANTIA ABSOLUTA
+   Independente de qualquer estado JS/bfcache/CSS cascade:
+   menu sem .open = invisível e não-clicável em qualquer tamanho de tela
+   ============================================================ */
+.navbar__mobile-menu:not(.open) {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* ============================================================
    TABLET PORTRAIT (≤ 768px)
    ============================================================ */
 @media (max-width: 768px) {
