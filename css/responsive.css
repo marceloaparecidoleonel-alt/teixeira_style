@@ -239,7 +239,12 @@
     margin-inline: auto;
   }
 
-  /* Banner */
+  /* Banner — padding garante altura sem colapsar no mobile */
+  .banner {
+    min-height: auto;
+    padding-block: 5rem;
+  }
+
   .banner__title {
     font-size: clamp(3.5rem, 16vw, 6rem);
   }
@@ -351,7 +356,8 @@
 
   /* Banner */
   .banner {
-    min-height: 400px;
+    min-height: auto;
+    padding-block: 4rem;
   }
 
   .banner__title {

@@ -191,14 +191,14 @@ button {
    ============================================================ */
 .reveal {
   opacity: 0;
-  transform: translateY(40px);
-  transition: opacity var(--transition-slow), transform var(--transition-slow);
+  /* REMOVIDO transform:translateY — deslocamento vertical em elementos opacity:0
+     causa sobreposição visual no mobile quando o IntersectionObserver não dispara */
+  transition: opacity var(--transition-slow);
   transition-delay: var(--delay, 0s);
 }
 
 .reveal.visible {
   opacity: 1;
-  transform: translateY(0);
 }
 
 /* DISPOSITIVOS TOUCH: desativa reveal completamente.
@@ -207,7 +207,6 @@ button {
   .reveal,
   .reveal.visible {
     opacity: 1 !important;
-    transform: none !important;
     transition: none !important;
     transition-delay: 0s !important;
   }
@@ -605,8 +604,6 @@ button {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  /* Isola o contexto de composição do hero para não afetar fixed externos */
-  isolation: isolate;
 }
 
 .hero__bg {
