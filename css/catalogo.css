@@ -35,9 +35,6 @@ a { text-decoration: none; color: inherit; }
   border-bottom: 1px solid rgba(255,255,255,0.1);
   z-index: 200;
   overflow: hidden;
-  /* Isola o contexto do marquee para não afetar outros fixed */
-  isolation: isolate;
-  contain: layout style;
 }
 
 .topbar__track { width: 100%; overflow: hidden; height: 100%; display: flex; align-items: center; }
@@ -71,8 +68,6 @@ a { text-decoration: none; color: inherit; }
   z-index: 150;
   display: flex;
   align-items: center;
-  isolation: isolate;
-  contain: layout style;
 }
 
 .navbar__container {
