@@ -168,16 +168,15 @@ a { text-decoration: none; color: inherit; }
    FILTERS BAR
    ============================================================ */
 .filters-bar {
-  position: fixed;
-  top: calc(36px + 70px);
-  left: 0;
-  right: 0;
+  /* sticky: adere ao fluxo do documento, gruda no topo ao scrollar.
+     Elimina a necessidade de padding-top manual no catalog-main e
+     resolve o bug da 'barra preta presa'. */
+  position: sticky;
+  top: 0;
   z-index: 100;
-  /* Fundo sólido: backdrop-filter quebra position:fixed no iOS Safari */
   background: #0b0b0f;
   border-bottom: 1px solid var(--border);
   padding: 0.9rem 2rem;
-  will-change: transform;
 }
 
 .filters-bar__inner {
@@ -263,7 +262,6 @@ a { text-decoration: none; color: inherit; }
   max-width: 1280px;
   margin-inline: auto;
   padding: 2.5rem 2rem 4rem;
-  padding-top: 180px;
   min-height: 60vh;
 }
 
@@ -586,8 +584,7 @@ a { text-decoration: none; color: inherit; }
   }
   .filters-bar__cats::-webkit-scrollbar { display: none; }
 
-  /* padding-top = topbar(36) + navbar(70) + filters-bar 2 linhas(~110px) */
-  .catalog-main { padding-top: 220px; padding-inline: 1rem; }
+  .catalog-main { padding-inline: 1rem; }
 
   .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
 
@@ -608,8 +605,7 @@ a { text-decoration: none; color: inherit; }
   .navbar__container { padding-inline: 0.75rem; }
   .product-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
   .filters-bar { padding: 0.6rem 0.75rem; }
-  /* topbar(36) + navbar(70) + filters 2 linhas(~110px) + folga */
-  .catalog-main { padding: 0 0.75rem 3rem; padding-top: 225px; }
+  .catalog-main { padding: 1rem 0.75rem 3rem; }
   .cat-hero { height: 180px; }
   .cat-cta { padding: 3rem 1rem; }
 
@@ -620,6 +616,5 @@ a { text-decoration: none; color: inherit; }
 
 @media (max-width: 360px) {
   .product-grid { grid-template-columns: 1fr; }
-  .catalog-main { padding-top: 230px; }
   .product-card__cta { font-size: 0.68rem; }
 }
