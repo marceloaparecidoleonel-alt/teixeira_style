@@ -362,15 +362,25 @@ button {
   width: 100%;
   z-index: 1000;
   padding: 0.8rem 0;
-  transition: background var(--transition-normal), padding var(--transition-normal), backdrop-filter var(--transition-normal);
+  transition: padding var(--transition-normal);
 }
 
 .navbar.scrolled {
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* CORREÇÃO CIRÚRGICA: backdrop-filter no elemento pai quebra position:fixed dos filhos.
+   Mover para ::before preserva o efeito visual sem criar novo containing block. */
+.navbar.scrolled::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: rgba(11, 11, 15, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  padding: 0.55rem 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .navbar__container {
