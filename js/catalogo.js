@@ -290,11 +290,13 @@ sortSelect.addEventListener('change', renderProducts);
 
 /* ---- NAVBAR SCROLL SHADOW ---- */
 const navbar = document.getElementById('navbar');
-window.addEventListener('scroll', () => {
-  navbar.style.boxShadow = window.scrollY > 10
-    ? '0 4px 24px rgba(0,0,0,0.5)'
-    : 'none';
-}, { passive: true });
+if (navbar) {
+  window.addEventListener('scroll', () => {
+    navbar.style.boxShadow = window.scrollY > 10
+      ? '0 4px 24px rgba(0,0,0,0.5)'
+      : 'none';
+  }, { passive: true });
+}
 
 /* ---- INIT ---- */
 loadCategoryFilters().then(loadProducts).then(() => {

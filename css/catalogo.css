@@ -556,8 +556,8 @@ a { text-decoration: none; color: inherit; }
   }
   .navbar__whatsapp svg { width: 20px; height: 20px; }
 
-  /* Filters bar: abaixo de topbar(36px) + navbar(70px) */
-  .filters-bar { padding: 0.65rem 1rem; top: calc(36px + 70px); }
+  /* Filters bar: abaixo de topbar(36px) apenas — catalogo.html não tem navbar */
+  .filters-bar { padding: 0.65rem 1rem; top: 36px; }
 
   /* Linha 1: busca + ordenar (sem flex-wrap na linha de controles) */
   .filters-bar__inner {
