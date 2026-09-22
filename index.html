@@ -512,8 +512,14 @@
       document.body.style.overflow = '';
     }
 
-    /* Executa imediatamente no load */
+    /* Executa imediatamente no load e no DOMContentLoaded */
     closeMobileMenu();
+    document.addEventListener('DOMContentLoaded', closeMobileMenu);
+
+    /* Restaura overflow ANTES de sair da página (evita scroll travado ao voltar) */
+    window.addEventListener('beforeunload', function() {
+      document.body.style.overflow = '';
+    });
 
     /* bfcache: força reload ao voltar pelo botão "Voltar" do browser */
     window.addEventListener('pageshow', function(e) {

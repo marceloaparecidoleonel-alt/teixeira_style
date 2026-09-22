@@ -540,19 +540,22 @@ button {
 .navbar__mobile-menu {
   position: fixed;
   inset: 0;
-  /* Fundo sólido: backdrop-filter causa renderização visível mesmo com opacity:0 em iOS/Android */
+  /* Fundo sólido: backdrop-filter quebra o hidden em iOS/Android */
   background: #0b0b0f;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   z-index: 999;
-  transition: opacity var(--transition-normal);
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .navbar__mobile-menu.open {
-  display: flex;
   opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .navbar__mobile-list {
