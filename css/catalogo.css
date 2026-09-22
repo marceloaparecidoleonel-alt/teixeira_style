@@ -598,7 +598,11 @@ a { text-decoration: none; color: inherit; }
     opacity: 1;
     background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 60%);
     pointer-events: auto;
+    padding: 0.6rem;
   }
+  /* Remove overflow:hidden do img-wrap no mobile para não cortar os botões do overlay.
+     O product-card pai (overflow:hidden) já contém o card visualmente. */
+  .product-card__img-wrap { overflow: visible; }
 }
 
 @media (max-width: 480px) {
