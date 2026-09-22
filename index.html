@@ -500,30 +500,38 @@
       }
     }, true);
 
-    /* Fecha menu mobile e reseta estado ao carregar/voltar */
-    function closeMobileMenu() {
+    /* Reseta estado do menu mobile — fecha tudo */
+    function resetMenuState() {
       var menu = document.getElementById('mobileMenu');
       var burger = document.getElementById('hamburger');
-      if (menu) { menu.classList.remove('open'); }
+      if (menu) {
+        menu.classList.remove('open');
+        menu.style.cssText = '';
+      }
       if (burger) {
         burger.classList.remove('active');
         burger.setAttribute('aria-expanded', 'false');
+        burger.style.cssText = '';
       }
       document.body.style.overflow = '';
+      document.body.style.cssText = document.body.style.cssText.replace(/overflow[^;]*;?/g, '');
     }
 
-    /* Executa imediatamente no load e no DOMContentLoaded */
-    closeMobileMenu();
-    document.addEventListener('DOMContentLoaded', closeMobileMenu);
+    /* Executa imediatamente */
+    resetMenuState();
 
-    /* Restaura overflow ANTES de sair da página (evita scroll travado ao voltar) */
-    window.addEventListener('beforeunload', function() {
-      document.body.style.overflow = '';
+    /* Restaura overflow ANTES de sair da página */
+    window.addEventListener('beforeunload', resetMenuState);
+
+    /* bfcache: reseta estado ao voltar pelo botão "Voltar" do browser */
+    window.addEventListener('pageshow', function(e) {
+      if (e.persisted) { resetMenuState(); }
     });
 
-    /* bfcache: força reload ao voltar pelo botão "Voltar" do browser */
-    window.addEventListener('pageshow', function(e) {
-      if (e.persisted) { window.location.reload(); }
+    /* Garante reset ao focar na página (troca de aba/app) */
+    window.addEventListener('focus', resetMenuState);
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') { resetMenuState(); }
     });
   </script>
 </body>
