@@ -497,11 +497,31 @@
       }
     }, true);
 
-    /* bfcache fix: ao voltar para home pelo botão "voltar" do browser,
-       recarrega a página para evitar elementos fixos de outras páginas sobrepostos */
+    /* bfcache / menu fix:
+       Ao voltar para home pelo botão "voltar" do browser (bfcache),
+       fecha o menu mobile se estiver aberto e recarrega a página. */
+    function closeMobileMenu() {
+      var menu = document.getElementById('mobileMenu');
+      var burger = document.getElementById('hamburger');
+      if (menu) { menu.classList.remove('open'); }
+      if (burger) {
+        burger.classList.remove('active');
+        burger.setAttribute('aria-expanded', 'false');
+      }
+      document.body.style.overflow = '';
+    }
+
     window.addEventListener('pageshow', function(e) {
       if (e.persisted) {
+        closeMobileMenu();
         window.location.reload();
+      }
+    });
+
+    /* Garante menu fechado sempre que a aba volta ao foco */
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        closeMobileMenu();
       }
     });
   </script>
