@@ -146,16 +146,6 @@
     margin-bottom: 2rem;
   }
 
-  /* Reveal: força visibilidade em mobile para evitar elementos travados em opacity:0 */
-  .reveal {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
 
   /* Navbar search HOME: menor mas visível */
   .page-index .navbar__search {
@@ -451,7 +441,7 @@
 }
 
 /* ============================================================
-   TOUCH DEVICES — disable cursor effects
+   TOUCH DEVICES — disable cursor effects + force reveal visible
    ============================================================ */
 @media (hover: none) {
   .cursor,
@@ -469,6 +459,15 @@
   .product-card,
   .instagram__item {
     cursor: pointer !important;
+  }
+
+  /* CORREÇÃO CRÍTICA: em dispositivos touch o IntersectionObserver
+     pode não disparar corretamente. Força todos os .reveal visíveis.
+     A animação de scroll é opcional — conteúdo nunca pode ficar opacity:0. */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
 
