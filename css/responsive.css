@@ -120,6 +120,43 @@
     padding: 0.45rem 0;
   }
 
+  /* Hero: z-index alto para ficar acima de qualquer elemento fixo de outra página */
+  .hero {
+    z-index: 1;
+  }
+
+  /* CTA Section: padding para não colapsar sem imagem de fundo */
+  .cta-section {
+    padding-block: 4rem;
+    min-height: auto;
+  }
+
+  .cta-section__content {
+    padding-inline: 1.5rem;
+    width: 100%;
+  }
+
+  .cta-section__title {
+    font-size: clamp(2rem, 10vw, 3.5rem);
+    margin-bottom: 1rem;
+  }
+
+  .cta-section__subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Reveal: força visibilidade em mobile para evitar elementos travados em opacity:0 */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   /* Navbar search HOME: menor mas visível */
   .page-index .navbar__search {
     max-width: 140px;

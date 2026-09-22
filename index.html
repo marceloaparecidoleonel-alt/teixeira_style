@@ -496,6 +496,14 @@
         window.location.href = 'cliente.html';
       }
     }, true);
+
+    /* bfcache fix: ao voltar para home pelo botão "voltar" do browser,
+       recarrega a página para evitar elementos fixos de outras páginas sobrepostos */
+    window.addEventListener('pageshow', function(e) {
+      if (e.persisted) {
+        window.location.reload();
+      }
+    });
   </script>
 </body>
 </html>
