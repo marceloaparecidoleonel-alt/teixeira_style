@@ -613,9 +613,19 @@ a { text-decoration: none; color: inherit; }
   .cat-hero { height: 180px; }
   .cat-cta { padding: 3rem 1rem; }
 
-  /* Botões do card menores mas visíveis */
-  .product-card__cta { font-size: 0.65rem; padding: 0.55rem 0.35rem; }
-  .product-card__cta svg { width: 12px; height: 12px; }
+  /* Gap menor no overlay para dar mais espaço aos botões em cards estreitos */
+  .product-card__overlay { gap: 0.3rem; }
+
+  /* Botões do card menores mas visíveis — letter-spacing zerado para caber em 2 colunas */
+  .product-card__cta {
+    font-size: 0.63rem;
+    padding: 0.5rem 0.25rem;
+    letter-spacing: 0;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .product-card__cta svg { width: 11px; height: 11px; flex-shrink: 0; }
 }
 
 @media (max-width: 360px) {
