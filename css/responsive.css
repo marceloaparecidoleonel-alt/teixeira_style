@@ -120,21 +120,27 @@
     padding: 0.45rem 0;
   }
 
-  /* Navbar search: esconde na HOME (page-index) no mobile */
+  /* Navbar search HOME: menor mas visível */
   .page-index .navbar__search {
-    display: none;
+    max-width: 140px;
+  }
+
+  .page-index .navbar__search-input {
+    width: 90px;
   }
 
   /* Google btn HOME: mostra apenas ícone, sem texto */
   .page-index .navbar__google-btn {
     font-size: 0;
-    padding: 0.45rem 0.6rem;
+    padding: 0.4rem 0.55rem;
     gap: 0;
+    min-width: 36px;
+    justify-content: center;
   }
 
   .page-index .navbar__google-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 
   /* Hero — garantir que o conteúdo não fique atrás do header */
@@ -373,12 +379,6 @@
    SMALL MOBILE (≤ 430px) — extra tweaks
    ============================================================ */
 @media (max-width: 430px) {
-  /* Navbar search smaller */
-  .navbar__search-input { width: 120px; }
-
-  /* Hero */
-  .hero__content { margin-bottom: 6rem; }
-
   /* Footer compact */
   .footer__top { padding-block: 3rem; }
   .footer__grid { gap: 2rem; }

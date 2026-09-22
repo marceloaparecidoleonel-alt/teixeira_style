@@ -521,13 +521,41 @@ a { text-decoration: none; color: inherit; }
 @media (max-width: 768px) {
   /* Navbar do catálogo: topbar(36px) + navbar abaixo */
   .navbar { top: 36px; }
-  .navbar__brand { position: static; transform: none; }
-  .navbar__container { gap: 0.5rem; padding-inline: 1rem; }
-  .navbar__logo { height: 44px; }
+
+  /* Container: voltar | logo (centro) | whatsapp */
+  .navbar__container {
+    gap: 0;
+    padding-inline: 0.75rem;
+    justify-content: space-between;
+  }
+
+  /* Logo centralizado com position static — evita sobreposição com botão voltar */
+  .navbar__brand {
+    position: static;
+    transform: none;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+
+  .navbar__logo { height: 42px; }
+
+  /* Botão voltar: texto visível e toque fácil */
+  .navbar__back {
+    font-size: 0.72rem;
+    flex-shrink: 0;
+    padding: 0.5rem 0.25rem;
+    min-width: 60px;
+  }
+
+  /* WhatsApp: só ícone no mobile */
   .navbar__whatsapp span { display: none; }
-  .navbar__whatsapp { padding: 0.5rem 0.75rem; font-size: 0; }
+  .navbar__whatsapp {
+    padding: 0.5rem 0.65rem;
+    font-size: 0;
+    flex-shrink: 0;
+  }
   .navbar__whatsapp svg { width: 20px; height: 20px; }
-  .navbar__back { font-size: 0.7rem; }
 
   /* Filters bar: abaixo de topbar(36px) + navbar(70px) */
   .filters-bar { padding: 0.65rem 1rem; top: calc(36px + 70px); }
