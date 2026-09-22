@@ -172,7 +172,7 @@ a { text-decoration: none; color: inherit; }
      Elimina a necessidade de padding-top manual no catalog-main e
      resolve o bug da 'barra preta presa'. */
   position: sticky;
-  top: 0;
+  top: 36px; /* cola abaixo do .topbar fixed (height:36px) */
   z-index: 100;
   background: #0b0b0f;
   border-bottom: 1px solid var(--border);
