@@ -61,7 +61,7 @@ a { text-decoration: none; color: inherit; }
    ============================================================ */
 .navbar {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 36px; left: 0; right: 0;
   height: 70px;
   background: #000000;
   border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -118,7 +118,7 @@ a { text-decoration: none; color: inherit; }
    CATALOG HERO
    ============================================================ */
 .cat-hero {
-  margin-top: calc(34px + 50px);
+  margin-top: calc(36px + 70px);
   height: 280px;
   background: var(--surface);
   display: flex;
@@ -169,7 +169,7 @@ a { text-decoration: none; color: inherit; }
    ============================================================ */
 .filters-bar {
   position: fixed;
-  top: 36px;
+  top: calc(36px + 70px);
   left: 0;
   right: 0;
   z-index: 100;
@@ -262,7 +262,7 @@ a { text-decoration: none; color: inherit; }
   max-width: 1280px;
   margin-inline: auto;
   padding: 2.5rem 2rem 4rem;
-  padding-top: 120px;
+  padding-top: 180px;
   min-height: 60vh;
 }
 
@@ -519,35 +519,78 @@ a { text-decoration: none; color: inherit; }
    RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
+  /* Navbar do catálogo: topbar(36px) + navbar abaixo */
   .navbar { top: 36px; }
   .navbar__brand { position: static; transform: none; }
   .navbar__container { gap: 0.5rem; padding-inline: 1rem; }
   .navbar__logo { height: 44px; }
   .navbar__whatsapp span { display: none; }
-  .navbar__whatsapp { padding: 0.5rem 0.75rem; }
+  .navbar__whatsapp { padding: 0.5rem 0.75rem; font-size: 0; }
+  .navbar__whatsapp svg { width: 20px; height: 20px; }
   .navbar__back { font-size: 0.7rem; }
-  .filters-bar { padding: 0.7rem 1rem; top: calc(36px + 70px); }
-  .filters-bar__inner { gap: 0.5rem; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-  .filters-bar__inner::-webkit-scrollbar { display: none; }
-  .filters-bar__cats { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .filters-bar__input { width: 120px; }
-  .filters-bar__select { flex-shrink: 0; }
-  .catalog-main { padding-top: 150px; padding-inline: 1rem; }
+
+  /* Filters bar: abaixo de topbar(36px) + navbar(70px) */
+  .filters-bar { padding: 0.65rem 1rem; top: calc(36px + 70px); }
+
+  /* Linha 1: busca + ordenar (sem flex-wrap na linha de controles) */
+  .filters-bar__inner {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  /* Campo de busca ocupa largura restante mas não estoura */
+  .filters-bar__search { flex: 1; min-width: 0; }
+  .filters-bar__input { width: 100%; min-width: 0; }
+
+  /* Ordenar: mantem tamanho mínimo */
+  .filters-bar__select { flex-shrink: 0; font-size: 0.75rem; }
+
+  /* Categorias: linha separada com scroll horizontal controlado */
+  .filters-bar__cats {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+    padding-bottom: 2px;
+  }
+  .filters-bar__cats::-webkit-scrollbar { display: none; }
+
+  /* padding-top = topbar(36) + navbar(70) + filters-bar 2 linhas(~110px) */
+  .catalog-main { padding-top: 220px; padding-inline: 1rem; }
+
   .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+
+  /* Hero: abaixo da topbar + navbar */
   .cat-hero { height: 200px; margin-top: calc(36px + 70px); }
+
   .cat-footer__inner { flex-direction: column; text-align: center; }
+
+  /* Botões do card: sempre visíveis no touch (não só no hover) */
+  .product-card__overlay {
+    opacity: 1;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 60%);
+    pointer-events: auto;
+  }
 }
 
 @media (max-width: 480px) {
   .navbar__container { padding-inline: 0.75rem; }
   .product-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
   .filters-bar { padding: 0.6rem 0.75rem; }
-  .catalog-main { padding: 1.25rem 0.75rem 3rem; padding-top: 145px; }
+  /* topbar(36) + navbar(70) + filters 2 linhas(~110px) + folga */
+  .catalog-main { padding: 0 0.75rem 3rem; padding-top: 225px; }
   .cat-hero { height: 180px; }
   .cat-cta { padding: 3rem 1rem; }
+
+  /* Botões do card menores mas visíveis */
+  .product-card__cta { font-size: 0.65rem; padding: 0.55rem 0.35rem; }
+  .product-card__cta svg { width: 12px; height: 12px; }
 }
 
 @media (max-width: 360px) {
   .product-grid { grid-template-columns: 1fr; }
-  .catalog-main { padding-top: 140px; }
+  .catalog-main { padding-top: 230px; }
+  .product-card__cta { font-size: 0.68rem; }
 }

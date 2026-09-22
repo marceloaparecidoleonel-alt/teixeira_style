@@ -111,7 +111,7 @@
     font-size: clamp(2rem, 8vw, 3rem);
   }
 
-  /* Navbar */
+  /* Navbar — home */
   .navbar {
     padding: 0.7rem 0;
   }
@@ -120,7 +120,41 @@
     padding: 0.45rem 0;
   }
 
-  /* Hero */
+  /* Navbar search: esconde na HOME (page-index) no mobile */
+  .page-index .navbar__search {
+    display: none;
+  }
+
+  /* Google btn HOME: mostra apenas ícone, sem texto */
+  .page-index .navbar__google-btn {
+    font-size: 0;
+    padding: 0.45rem 0.6rem;
+    gap: 0;
+  }
+
+  .page-index .navbar__google-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Hero — garantir que o conteúdo não fique atrás do header */
+  .hero {
+    padding-top: calc(34px + 56px);
+    box-sizing: border-box;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .hero__content {
+    margin-bottom: 4rem;
+    padding-bottom: 1rem;
+  }
+
+  .hero__logo-img {
+    max-width: min(520px, 88vw);
+    margin-bottom: 1.2rem;
+  }
+
   .hero__title {
     font-size: clamp(3.5rem, 16vw, 6rem);
   }
@@ -225,7 +259,25 @@
     height: 38px;
   }
 
+  /* Navbar actions — carrinho acessível */
+  .navbar__actions {
+    gap: 0.5rem;
+  }
+
   /* Hero */
+  .hero {
+    padding-top: calc(34px + 52px);
+  }
+
+  .hero__content {
+    margin-bottom: 3rem;
+  }
+
+  .hero__logo-img {
+    max-width: min(420px, 90vw);
+    margin-bottom: 1rem;
+  }
+
   .hero__title {
     font-size: clamp(3rem, 18vw, 5rem);
   }
@@ -302,6 +354,14 @@
 
   .navbar__logo-img {
     height: 32px;
+  }
+
+  .hero__content {
+    margin-bottom: 2rem;
+  }
+
+  .hero__logo-img {
+    max-width: 90vw;
   }
 
   .instagram__grid {
