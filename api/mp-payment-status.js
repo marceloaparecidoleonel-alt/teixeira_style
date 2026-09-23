@@ -177,15 +177,28 @@ module.exports = async function handler(req, res) {
     const mpData  = mpResponse.body;
     const orderId = mpData.external_reference;
 
-    /* Baixa estoque somente quando aprovado — proteção idempotente */
+    /* Quando aprovado: atualiza status do pedido + baixa estoque */
     if (mpData.status === 'approved' && orderId) {
       const projectId = process.env.FIREBASE_PROJECT_ID || 'teixeira-style';
       if (projectId) {
-        /* Busca os itens do pedido no Firestore para saber qty e productId */
+        /* Busca o pedido para verificar estado atual e obter os itens */
         const orderRes = await firestoreGet(projectId, 'orders', orderId);
         if (orderRes.status === 200) {
           const orderFields = orderRes.body.fields || {};
-          /* items é um array no Firestore — extraímos via arrayValue */
+          const currentStatus = orderFields.status?.stringValue || '';
+
+          /* Atualiza para 'pago' somente se ainda não estiver pago
+             (idempotência: evita sobrescrever desnecessariamente) */
+          if (currentStatus !== 'pago') {
+            firestorePatch(projectId, 'orders', orderId, {
+              status:               'pago',
+              paymentStatus:        'approved',
+              mercadopagoPaymentId: String(mpData.id),
+              paidAt:               new Date().toISOString()
+            }).catch(e => console.warn('[Status] Firestore update (best-effort):', e.message));
+          }
+
+          /* Baixa de estoque — idempotente via stockDecremented */
           const rawItems = orderFields.items?.arrayValue?.values || [];
           const items = rawItems.map(v => {
             const f = v.mapValue?.fields || {};

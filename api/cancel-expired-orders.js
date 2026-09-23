@@ -8,7 +8,7 @@
 const https = require('https');
 
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'teixeira-style';
-const EXPIRY_MS  = 30 * 60 * 1000; /* 30 minutos em milissegundos */
+const EXPIRY_MS  = 40 * 60 * 1000; /* 40 minutos — PIX expira em 30min, margem de segurança */
 
 /* ---- Firestore REST: runQuery (para buscar múltiplos docs com filtro) ---- */
 function firestoreQuery(projectId, body) {
@@ -133,6 +133,15 @@ module.exports = async function handler(req, res) {
       /* Se não tem created_at ou ainda está dentro do prazo, pula */
       if (createdSec === null || createdSec > cutoffSec) {
         skipped++;
+        continue;
+      }
+
+      /* Nunca cancelar pedido que já foi pago (paymentStatus = approved ou status = pago) */
+      const currentStatus        = fields.status?.stringValue        || '';
+      const currentPaymentStatus = fields.paymentStatus?.stringValue || '';
+      if (currentStatus === 'pago' || currentPaymentStatus === 'approved') {
+        skipped++;
+        console.log(`[CancelCron] Pedido ${docId} ignorado — já pago.`);
         continue;
       }
 

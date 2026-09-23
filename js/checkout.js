@@ -471,6 +471,14 @@ function showPixScreen(data) {
 function startPolling() {
   if (_pollInterval) clearInterval(_pollInterval);
   _pollInterval = setInterval(checkPaymentStatus, 5000);
+  /* Timeout máximo de 35 minutos — PIX expira em 30min */
+  setTimeout(() => {
+    if (_pollInterval && !_paymentApproved) {
+      clearInterval(_pollInterval);
+      _pollInterval = null;
+      console.log('[Poll] Timeout de 35min atingido — polling encerrado.');
+    }
+  }, 35 * 60 * 1000);
 }
 
 async function checkPaymentStatus() {
@@ -614,29 +622,24 @@ function tryRestoreSession() {
     return false;
   }
 
-  /* Sessão muito antiga (> 30 min sem pagar) = expirada, descarta */
-  const MAX_AGE_MS = 30 * 60 * 1000;
+  /* Sessão muito antiga (> 35 min sem pagar) = expirada, descarta.
+     NÃO cancelar automaticamente no Firestore: o pagamento pode ter sido
+     aprovado enquanto a página estava fechada. O cron cancel-expired-orders
+     é o responsável por cancelar pedidos realmente não pagos. */
+  const MAX_AGE_MS = 35 * 60 * 1000;
   if (sess.savedAt && (Date.now() - sess.savedAt) > MAX_AGE_MS) {
-    console.log('[Checkout] Sessão PIX expirada — descartando.');
-    /* Marca pedido como cancelado no Firestore (sem bloquear) */
-    _checkoutDb.collection('orders').doc(sess.orderId).update({
-      status:        'cancelado',
-      paymentStatus: 'expired'
-    }).catch(() => {});
+    console.log('[Checkout] Sessão PIX expirada — descartando (sem cancelar no Firestore).');
     clearSession();
     return false;
   }
 
   /* Sessão obsoleta: total salvo não bate com o carrinho atual.
      Isso indica que o cliente abandonou e voltou com itens diferentes
-     (ou o carrinho mudou). Descarta a sessão velha para evitar R$X errado. */
+     (ou o carrinho mudou). Descarta a sessão velha para evitar R$X errado.
+     NÃO cancela no Firestore: o pagamento pode já ter sido aprovado. */
   const currentTotal = (typeof cartTotal === 'function') ? cartTotal() : 0;
   if (currentTotal > 0 && Math.abs((sess.orderTotal || 0) - currentTotal) > 0.01) {
     console.log(`[Checkout] Total da sessão (${sess.orderTotal}) ≠ carrinho atual (${currentTotal}) — descartando.`);
-    _checkoutDb.collection('orders').doc(sess.orderId).update({
-      status:        'cancelado',
-      paymentStatus: 'expired'
-    }).catch(() => {});
     clearSession();
     return false;
   }

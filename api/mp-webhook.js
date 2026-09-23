@@ -169,6 +169,16 @@ module.exports = async function handler(req, res) {
       orderStatus = 'reembolsado';
     }
 
+    /* Verifica estado atual do pedido antes de atualizar —
+       NUNCA rebaixar um pedido já pago para cancelado/aguardando */
+    const projectId = process.env.FIREBASE_PROJECT_ID || 'teixeira-style';
+    const existingRes = await firestoreGet(projectId, 'orders', orderId).catch(() => null);
+    const existingStatus = existingRes?.body?.fields?.status?.stringValue || '';
+    if (existingStatus === 'pago' && mpStatus !== 'approved') {
+      console.log(`[Webhook] Pedido ${orderId} já está pago — ignorando status ${mpStatus}`);
+      return res.status(200).json({ received: true });
+    }
+
     /* Atualiza o Firestore */
     await firestoreUpdate(orderId, {
       status:               orderStatus,
