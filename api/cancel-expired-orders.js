@@ -10,6 +10,31 @@ const https = require('https');
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'teixeira-style';
 const EXPIRY_MS  = 40 * 60 * 1000; /* 40 minutos — PIX expira em 30min, margem de segurança */
 
+/* ---- Consulta status real do pagamento no Mercado Pago ---- */
+function mpGetStatus(paymentId) {
+  return new Promise((resolve) => {
+    const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    if (!token || !paymentId) return resolve(null);
+    const req = https.request({
+      hostname: 'api.mercadopago.com',
+      path: `/v1/payments/${paymentId}`,
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    }, res => {
+      let data = '';
+      res.on('data', c => { data += c; });
+      res.on('end', () => {
+        try {
+          const body = JSON.parse(data);
+          resolve(res.statusCode === 200 ? body.status : null);
+        } catch(e) { resolve(null); }
+      });
+    });
+    req.on('error', () => resolve(null));
+    req.end();
+  });
+}
+
 /* ---- Firestore REST: runQuery (para buscar múltiplos docs com filtro) ---- */
 function firestoreQuery(projectId, body) {
   return new Promise((resolve, reject) => {
@@ -143,6 +168,30 @@ module.exports = async function handler(req, res) {
         skipped++;
         console.log(`[CancelCron] Pedido ${docId} ignorado — já pago.`);
         continue;
+      }
+
+      /* Se o pedido possui payment_id, confirma status real no Mercado Pago antes de cancelar.
+         Isso evita cancelar um pagamento aprovado que o webhook ainda não processou (race condition). */
+      const mpPaymentId = fields.mercadopagoPaymentId?.stringValue || '';
+      if (mpPaymentId) {
+        const mpStatus = await mpGetStatus(mpPaymentId);
+        if (mpStatus === 'approved') {
+          /* Pagamento aprovado no MP mas Firestore ainda não foi atualizado — corrige agora */
+          await firestorePatch(PROJECT_ID, 'orders', docId, {
+            status:        'pago',
+            paymentStatus: 'approved',
+            paidAt:        new Date().toISOString()
+          });
+          skipped++;
+          console.log(`[CancelCron] Pedido ${docId} estava aprovado no MP — atualizado para pago.`);
+          continue;
+        }
+        /* pending/in_process: ainda pode ser aprovado — não cancelar */
+        if (mpStatus === 'pending' || mpStatus === 'in_process' || mpStatus === 'in_mediation') {
+          skipped++;
+          console.log(`[CancelCron] Pedido ${docId} com status MP '${mpStatus}' — não cancelar.`);
+          continue;
+        }
       }
 
       /* Cancela o pedido */

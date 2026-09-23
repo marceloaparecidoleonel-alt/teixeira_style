@@ -80,6 +80,11 @@ service cloud.firestore {
                                  'paymentProvider','paymentMethod','externalReference',
                                  'cancelledAt','adminArchived','archived_at']);
 
+      // Backend serverless (webhook/polling) sem Firebase Admin precisa ler o pedido
+      // para verificar idempotência (stockDecremented, status atual).
+      // Leitura sem auth é segura aqui pois orderId é UUID interno não-adivinável.
+      allow read: if request.auth == null;
+
       allow delete: if request.auth != null;
     }
 

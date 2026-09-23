@@ -71,7 +71,12 @@ function firestorePatch(projectId, collection, docId, fields) {
     }, res => {
       let data = '';
       res.on('data', c => { data += c; });
-      res.on('end', () => resolve({ status: res.statusCode }));
+      res.on('end', () => {
+        if (res.statusCode !== 200) {
+          console.error(`[Firestore PATCH] HTTP ${res.statusCode} para ${collection}/${docId}:`, data.slice(0, 300));
+        }
+        resolve({ status: res.statusCode });
+      });
     });
     req.on('error', reject);
     req.write(payload);
