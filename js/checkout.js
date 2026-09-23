@@ -145,13 +145,13 @@ function maskPhone(el) {
    Evita perder o pedido/QR Code ao recarregar a página
    ============================================================ */
 function saveSession(data) {
-  try { sessionStorage.setItem(_SESSION_KEY, JSON.stringify(data)); } catch(e) {}
+  try { localStorage.setItem(_SESSION_KEY, JSON.stringify(data)); } catch(e) {}
 }
 function loadSession() {
-  try { return JSON.parse(sessionStorage.getItem(_SESSION_KEY) || 'null'); } catch(e) { return null; }
+  try { return JSON.parse(localStorage.getItem(_SESSION_KEY) || 'null'); } catch(e) { return null; }
 }
 function clearSession() {
-  try { sessionStorage.removeItem(_SESSION_KEY); } catch(e) {}
+  try { localStorage.removeItem(_SESSION_KEY); } catch(e) {}
 }
 
 /* ============================================================
