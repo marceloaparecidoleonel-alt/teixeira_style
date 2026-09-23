@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="css/catalogo.css" />
   <link rel="stylesheet" href="css/cart.css" />
   <style>
+    /* Sem .topbar no checkout — corrige posição do navbar e padding do body */
+    .page-checkout body, body.page-checkout { padding-top: 0; }
+    .page-checkout .navbar, body.page-checkout .navbar { top: 0; }
     .page-checkout .cat-footer { padding: 0.75rem 2rem; }
     .page-checkout .navbar__logo { transform: scale(2.0); transform-origin: center; }
     .page-checkout .navbar__actions { gap: 0.5rem; align-items: center; flex-wrap: nowrap; }
