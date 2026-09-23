@@ -16,19 +16,12 @@ const http  = require('http');
 const FIREBASE_AUTH_HOST = 'teixeira-style.firebaseapp.com';
 
 module.exports = async function handler(req, res) {
-  /* Reconstrói o path: /api/auth-proxy → /__/auth/...
-     O vercel.json mapeia /__/auth/(.*) → /api/auth-proxy?path=$1 */
-  const subpath = req.query.path || '';
-
-  let search = '';
-  if (req.url.includes('?')) {
-    const qs = new URLSearchParams(req.url.split('?').slice(1).join('?'));
-    qs.delete('path');
-    const remaining = qs.toString();
-    if (remaining) search = '?' + remaining;
-  }
-
-  const targetPath = `/__/auth/${subpath}${search}`;
+  /* req.url contém o path original da requisição: /__/auth/handler?apiKey=...
+     O Vercel preserva a URL original mesmo ao rotear para esta função.
+     Usamos diretamente para montar o targetPath sem manipulação extra. */
+  const targetPath = req.url.startsWith('/__/auth/')
+    ? req.url
+    : `/__/auth/${req.url.replace(/^\/+/, '')}`;
 
   /* Remove headers que causariam problemas no proxy */
   const proxyHeaders = { ...req.headers };
