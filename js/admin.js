@@ -1921,3 +1921,248 @@ document.getElementById('settingsAppearanceBtn')?.addEventListener('click', asyn
   input.addEventListener('focus', () => { if (input.value.trim()) renderResults(input.value.trim().toLowerCase()); });
 })();
 
+/* ============================================================
+   SISTEMA DE NOTIFICAÇÕES DE NOVOS PEDIDOS
+   Isolado — não altera pedidos, pagamentos, estoque ou checkout.
+   Apenas observa novos documentos na coleção 'orders'.
+   ============================================================ */
+(function initNotifications() {
+
+  /* ---- Constantes ---- */
+  const LS_ENABLED  = 'ts_notif_enabled';
+  const LS_SEEN     = 'ts_notif_seen';     /* IDs já notificados */
+  const LS_READ     = 'ts_notif_read';     /* IDs marcados como lidos */
+  const MAX_SEEN    = 200;                 /* Limite do localStorage */
+  const MAX_NOTIFS  = 30;                  /* Notificações exibidas no dropdown */
+
+  /* ---- Estado em memória ---- */
+  let _enabled       = localStorage.getItem(LS_ENABLED) !== 'false'; /* default: true */
+  let _notifications = [];      /* { id, title, sub, time, read } */
+  let _notifUnsub    = null;    /* unsubscribe do listener de notificações */
+  let _initialized   = false;   /* listener já registrado? */
+  let _audioCtx      = null;    /* AudioContext — criado na primeira interação */
+
+  /* ---- DOM refs ---- */
+  const btn        = document.getElementById('notifBtn');
+  const dropdown   = document.getElementById('notifDropdown');
+  const countBadge = document.getElementById('notifCount');
+  const list       = document.getElementById('notifList');
+  const toggleBtn  = document.getElementById('notifToggleBtn');
+  const markAllBtn = document.getElementById('notifMarkAll');
+
+  if (!btn || !dropdown) return; /* Admin não carregou ainda */
+
+  /* ---- Utilitários localStorage ---- */
+  function getSeenIds() {
+    try { return new Set(JSON.parse(localStorage.getItem(LS_SEEN) || '[]')); }
+    catch { return new Set(); }
+  }
+  function addSeenId(id) {
+    const seen = [...getSeenIds(), id].slice(-MAX_SEEN);
+    try { localStorage.setItem(LS_SEEN, JSON.stringify(seen)); } catch {}
+  }
+  function getReadIds() {
+    try { return new Set(JSON.parse(localStorage.getItem(LS_READ) || '[]')); }
+    catch { return new Set(); }
+  }
+  function addReadId(id) {
+    const read = [...getReadIds(), id].slice(-MAX_SEEN);
+    try { localStorage.setItem(LS_READ, JSON.stringify(read)); } catch {}
+  }
+
+  /* ---- Som curto via Web Audio API ---- */
+  function _ensureAudio() {
+    if (_audioCtx) return;
+    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
+  }
+  function playNotifSound() {
+    if (!_audioCtx) return;
+    try {
+      const osc  = _audioCtx.createOscillator();
+      const gain = _audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(_audioCtx.destination);
+      osc.type      = 'sine';
+      osc.frequency.setValueAtTime(880, _audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(660, _audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.18, _audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.35);
+      osc.start(_audioCtx.currentTime);
+      osc.stop(_audioCtx.currentTime + 0.35);
+    } catch (e) { console.warn('[Notif] Audio:', e.message); }
+  }
+
+  /* ---- Formatação de tempo relativo ---- */
+  function _timeAgo(seconds) {
+    if (!seconds) return '';
+    const diff = Math.floor(Date.now() / 1000 - seconds);
+    if (diff < 60)   return 'Agora';
+    if (diff < 3600) return `${Math.floor(diff/60)} min`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h`;
+    return `${Math.floor(diff/86400)}d`;
+  }
+
+  function _fmtR$(v) {
+    return 'R$ ' + (Number(v)||0).toFixed(2).replace('.', ',');
+  }
+
+  /* ---- Renderiza dropdown ---- */
+  function renderDropdown() {
+    const readIds = getReadIds();
+    const unread  = _notifications.filter(n => !readIds.has(n.id));
+
+    /* Badge */
+    if (unread.length > 0) {
+      countBadge.textContent = unread.length > 9 ? '9+' : unread.length;
+      countBadge.classList.remove('hidden');
+    } else {
+      countBadge.classList.add('hidden');
+    }
+
+    /* Toggle button */
+    if (_enabled) {
+      toggleBtn.textContent = '🔔 Ativado';
+      toggleBtn.classList.add('enabled');
+    } else {
+      toggleBtn.textContent = '🔕 Desativado';
+      toggleBtn.classList.remove('enabled');
+    }
+
+    /* Lista */
+    if (_notifications.length === 0) {
+      list.innerHTML = '<p class="notif-empty">Nenhuma notificação</p>';
+      return;
+    }
+
+    list.innerHTML = _notifications.slice(0, MAX_NOTIFS).map(n => {
+      const isUnread = !readIds.has(n.id);
+      return `<div class="notif-item ${isUnread ? 'unread' : ''}" data-id="${n.id}">
+        <div class="notif-item__icon">🛍️</div>
+        <div class="notif-item__body">
+          <div class="notif-item__title">${n.title}</div>
+          <div class="notif-item__sub">${n.sub}</div>
+          <div class="notif-item__time">${n.time}</div>
+        </div>
+        ${isUnread ? '<div class="notif-item__dot"></div>' : ''}
+      </div>`;
+    }).join('');
+
+    /* Clique em item → vai para Pedidos + marca lido */
+    list.querySelectorAll('.notif-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.id;
+        addReadId(id);
+        goToPage('orders');
+        dropdown.classList.add('hidden');
+        renderDropdown();
+      });
+    });
+  }
+
+  /* ---- Liga o listener de notificações (único) ---- */
+  function startNotifListener() {
+    if (_initialized) return;
+    _initialized = true;
+
+    /* Marca o timestamp de início — só notifica pedidos DEPOIS deste momento */
+    const startTime = Date.now() / 1000;
+
+    _notifUnsub = db.collection('orders')
+      .orderBy('created_at', 'desc')
+      .onSnapshot(snap => {
+        snap.docChanges().forEach(change => {
+          if (change.type !== 'added') return;
+
+          const doc  = change.doc;
+          const id   = doc.id;
+          const data = doc.data();
+
+          /* Só processa pedidos criados DEPOIS que o listener foi iniciado */
+          const createdSec = data.created_at ? data.created_at.seconds : 0;
+          if (createdSec < startTime) return;
+
+          /* Deduplicação por ID */
+          if (getSeenIds().has(id)) return;
+          addSeenId(id);
+
+          /* Monta notificação */
+          const notif = {
+            id,
+            title: `Novo pedido #${id.slice(-6).toUpperCase()}`,
+            sub:   `${_fmtR$(data.total)} — ${data.full_name || data.email || 'Cliente'}`,
+            time:  _timeAgo(createdSec),
+            read:  false
+          };
+
+          _notifications.unshift(notif);
+          if (_notifications.length > MAX_NOTIFS) _notifications.pop();
+
+          /* Som e badge apenas se habilitado */
+          if (_enabled) {
+            playNotifSound();
+          }
+
+          renderDropdown();
+        });
+      }, err => {
+        console.warn('[Notif] Listener:', err.message);
+      });
+  }
+
+  /* ---- Toggle do dropdown ---- */
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    _ensureAudio(); /* desbloqueia AudioContext na primeira interação */
+    dropdown.classList.toggle('hidden');
+    renderDropdown();
+  });
+
+  /* ---- Fecha ao clicar fora ---- */
+  document.addEventListener('click', e => {
+    if (!dropdown.classList.contains('hidden') &&
+        !dropdown.contains(e.target) &&
+        e.target !== btn) {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  /* ---- Ativa / Desativa ---- */
+  toggleBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    _enabled = !_enabled;
+    localStorage.setItem(LS_ENABLED, _enabled);
+    renderDropdown();
+  });
+
+  /* ---- Marcar todas como lidas ---- */
+  markAllBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    _notifications.forEach(n => addReadId(n.id));
+    renderDropdown();
+  });
+
+  /* ---- Inicia listener quando o painel Admin for mostrado ---- */
+  /* Aguarda o auth confirmar que o admin está logado antes de registrar */
+  const _origShowPanel = _showAdminPanel;
+  /* Observa quando adminPanel perde a classe 'hidden' */
+  const _panelObserver = new MutationObserver(() => {
+    const panel = document.getElementById('adminPanel');
+    if (panel && !panel.classList.contains('hidden')) {
+      _panelObserver.disconnect();
+      startNotifListener();
+      renderDropdown();
+    }
+  });
+  const _panel = document.getElementById('adminPanel');
+  if (_panel) {
+    if (!_panel.classList.contains('hidden')) {
+      /* Painel já visível (improvável no carregamento inicial) */
+      startNotifListener();
+      renderDropdown();
+    } else {
+      _panelObserver.observe(_panel, { attributes: true, attributeFilter: ['class'] });
+    }
+  }
+
+})(); /* fim initNotifications */
+

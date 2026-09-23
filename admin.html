@@ -98,10 +98,24 @@
           <input type="text" placeholder="Pesquisar..." class="topbar-search-input" />
         </div>
         <div class="topbar-actions">
-          <button class="topbar-btn notification-btn" id="notifBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-            <span class="notif-dot"></span>
-          </button>
+          <div class="notif-btn-wrap">
+            <button class="topbar-btn notification-btn" id="notifBtn" title="Notificações">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+              <span class="notif-count hidden" id="notifCount">0</span>
+            </button>
+            <div class="notif-dropdown hidden" id="notifDropdown">
+              <div class="notif-header">
+                <span class="notif-header__title">Notificações</span>
+                <div class="notif-header__actions">
+                  <button class="notif-toggle-btn" id="notifToggleBtn">🔕 Desativado</button>
+                  <button class="notif-mark-all" id="notifMarkAll">Marcar lidas</button>
+                </div>
+              </div>
+              <div class="notif-list" id="notifList">
+                <p class="notif-empty">Nenhuma notificação</p>
+              </div>
+            </div>
+          </div>
           <div class="topbar-user">
             <div class="topbar-avatar">A</div>
             <span class="topbar-username">Admin</span>
