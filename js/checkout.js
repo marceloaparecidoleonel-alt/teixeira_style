@@ -74,6 +74,58 @@ function maskCep(el) {
   });
 }
 
+/* ============================================================
+   AUTO-PREENCHIMENTO DE CEP VIA VIACEP
+   ============================================================ */
+function setupCepAutoFill(cepEl) {
+  const cityEl   = document.getElementById('city');
+  const estadoEl = document.getElementById('estado');
+  if (!cepEl || !cityEl || !estadoEl) return;
+
+  let _lastCep  = '';
+  let _abort    = null;
+
+  function lookupCep() {
+    const digits = cepEl.value.replace(/\D/g, '');
+    if (digits.length !== 8) return;
+    if (digits === _lastCep) return; /* mesmo CEP — não repete */
+    _lastCep = digits;
+
+    /* Cancela requisição anterior se ainda em curso */
+    if (_abort) { _abort.abort(); }
+    _abort = new AbortController();
+
+    fetch(`https://viacep.com.br/ws/${digits}/json/`, { signal: _abort.signal })
+      .then(r => r.json())
+      .then(data => {
+        if (data.erro) return; /* CEP não encontrado — deixa usuário preencher */
+        if (data.localidade && !cityEl.value.trim()) {
+          cityEl.value = data.localidade;
+        }
+        if (data.uf) {
+          const opt = [...estadoEl.options].find(o => o.value === data.uf || o.text === data.uf);
+          if (opt) estadoEl.value = opt.value;
+        }
+      })
+      .catch(e => {
+        if (e.name !== 'AbortError') {
+          console.warn('[CEP] Falha na consulta:', e.message);
+        }
+      });
+  }
+
+  /* Dispara ao sair do campo */
+  cepEl.addEventListener('blur', lookupCep);
+
+  /* Dispara também quando o usuário termina de digitar os 8 dígitos no input */
+  cepEl.addEventListener('input', () => {
+    const digits = cepEl.value.replace(/\D/g, '');
+    if (digits.length === 8) lookupCep();
+    /* Se o CEP foi apagado, reseta o último CEP para permitir nova consulta */
+    if (digits.length === 0) _lastCep = '';
+  });
+}
+
 function maskPhone(el) {
   el.addEventListener('input', () => {
     let v = el.value.replace(/\D/g, '').slice(0, 11);
@@ -686,6 +738,7 @@ function initCheckout() {
   const cepEl   = document.getElementById('cep');
   const phoneEl = document.getElementById('whatsapp');
   if (cepEl)   maskCep(cepEl);
+  if (cepEl)   setupCepAutoFill(cepEl);
   if (phoneEl) maskPhone(phoneEl);
 
   /* 1ª renderização: dados que já estão no localStorage (usuário com sessão ativa) */
