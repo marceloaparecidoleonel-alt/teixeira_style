@@ -113,28 +113,11 @@ async function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
 
-  /* Mobile: usa redirect (popup é bloqueado pelo Chrome/Safari mobile) */
-  if (_isMobile()) {
-    try {
-      await auth.signInWithRedirect(provider);
-    } catch (err) {
-      console.error('Login error (redirect):', err.code, err.message);
-      _loginInProgress = false;
-    }
-    return; /* redirect navega para fora da página — o finally não executa */
-  }
-
-  /* Desktop: tenta popup; se falhar por domínio/bloqueio cai para redirect */
   try {
     await auth.signInWithPopup(provider);
   } catch (err) {
-    const fallbackCodes = [
-      'auth/unauthorized-domain',
-      'auth/popup-blocked',
-      'auth/operation-not-supported-in-this-environment'
-    ];
-    if (fallbackCodes.includes(err.code)) {
-      /* Popup bloqueado ou domínio não autorizado: tenta redirect como fallback */
+    if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
+      /* Popup bloqueado pelo browser: fallback para redirect */
       try { await auth.signInWithRedirect(provider); } catch(e) { /* sem-op */ }
       return;
     }

@@ -40,10 +40,6 @@
       "dest": "/api/cancel-expired-orders.js"
     },
     {
-      "src": "/__/auth/(.*)",
-      "dest": "/api/auth-proxy"
-    },
-    {
       "src": "/(.*)",
       "dest": "/$1"
     }
