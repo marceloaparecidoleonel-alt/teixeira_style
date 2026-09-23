@@ -14,11 +14,6 @@ function isAdminEmail(email) {
 /* Flag para evitar redirecionamentos duplos ao admin */
 let _redirectingToAdmin = false;
 
-/* Sessão persistente — mantém login ao fechar/reabrir o browser */
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => {
-  console.error('Falha ao definir persistência:', err && err.message);
-});
-
 /* Estado do usuário */
 window.currentUser = null;
 window.__authReady = false;
@@ -152,24 +147,86 @@ async function signInWithGoogle() {
 }
 window.signInWithGoogle = signInWithGoogle;
 
-/* Restaura resultado após signInWithRedirect (executa em toda carga de página) */
-auth.getRedirectResult().then(result => {
-  if (result && result.user) {
-    const saved = restorePendingAction();
-    if (saved) window.__pendingCartAction = saved;
-  }
-}).catch(err => {
-  /* auth/unauthorized-domain via redirect = domínio não cadastrado no Firebase Console */
-  if (err && err.code && err.code !== 'auth/no-auth-event') {
-    console.error('[Auth] getRedirectResult error:', err.code);
-  }
-});
+/* ============================================================
+   Inicialização do fluxo de auth
+   Aguarda setPersistence antes de registrar qualquer listener.
+   Isso evita que onAuthStateChanged dispare com null enquanto
+   a persistência ainda está sendo configurada (causa do bug
+   mobile pós-redirect: UI voltava para estado deslogado).
+   ============================================================ */
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .catch(err => { console.error('Falha ao definir persistência:', err && err.message); })
+  .finally(() => {
 
-/* Timeout de segurança: remove auth-loading após 4s máximo */
+    /* Processa resultado do signInWithRedirect (mobile) */
+    auth.getRedirectResult().then(result => {
+      if (result && result.user) {
+        const saved = restorePendingAction();
+        if (saved) window.__pendingCartAction = saved;
+      }
+    }).catch(err => {
+      if (err && err.code && err.code !== 'auth/no-auth-event') {
+        console.error('[Auth] getRedirectResult error:', err.code);
+      }
+    });
+
+    /* Listener de estado — registrado somente após persistência configurada */
+    auth.onAuthStateChanged(async user => {
+      const previousUser = window.currentUser;
+      window.currentUser = user;
+      window.__authReady = true;
+
+      if (user && isAdminEmail(user.email)) {
+        document.body.classList.remove('auth-loading');
+        if (!window.location.pathname.endsWith('admin.html') && !_redirectingToAdmin) {
+          _redirectingToAdmin = true;
+          window.location.href = 'admin.html';
+        }
+        return;
+      }
+
+      updateAuthUI();
+
+      if (user) {
+        try {
+          const clientRef = window.fbDb.collection('clients').doc(user.uid);
+          await clientRef.set({
+            nome:          user.displayName || '',
+            email:         user.email       || '',
+            foto:          user.photoURL    || '',
+            ultimo_acesso: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          const snap = await clientRef.get();
+          if (!snap.data()?.criado_em) {
+            await clientRef.update({ criado_em: firebase.firestore.FieldValue.serverTimestamp() });
+          }
+        } catch (e) { /* Firestore indisponível — não bloqueia o login */ }
+
+        if (typeof loadCartFromFirestore === 'function') {
+          await loadCartFromFirestore();
+        }
+        if (window.__pendingCartAction) {
+          await executePendingCartAction();
+        }
+      } else {
+        if (previousUser && typeof clearLocalCart === 'function') {
+          clearLocalCart();
+        }
+      }
+    });
+
+  }); /* fim do .finally() */
+
+/* Timeout de segurança: 2s máximo de auth-loading.
+   Chama updateAuthUI() para garantir render correto caso
+   onAuthStateChanged já tenha disparado e setado __authReady. */
 setTimeout(() => {
+  if (!window.__authReady) {
+    window.__authReady = true;
+  }
+  updateAuthUI();
   document.body.classList.remove('auth-loading');
-  window.__authReady = true;
-}, 4000);
+}, 2000);
 
 /* ---- Modal de confirmação de logout ---- */
 function showLogoutModal() {
@@ -224,55 +281,7 @@ async function executePendingCartAction() {
   }
 }
 
-/* ---- Listener de estado de autenticação ---- */
-auth.onAuthStateChanged(async user => {
-  const previousUser = window.currentUser;
-  window.currentUser = user;
-  window.__authReady = true;
-
-  if (user && isAdminEmail(user.email)) {
-    /* Administrador identificado */
-    document.body.classList.remove('auth-loading');
-    if (!window.location.pathname.endsWith('admin.html') && !_redirectingToAdmin) {
-      _redirectingToAdmin = true;
-      window.location.href = 'admin.html';
-    }
-    /* Se já está em admin.html, não altera a UI de cliente — o admin.js controla */
-    return;
-  }
-
-  /* Fluxo normal dos clientes (e-mail diferente do admin) */
-  updateAuthUI();
-
-  if (user) {
-    /* Sincroniza/cria documento do cliente no Firestore (sem sobrescrever campos existentes) */
-    try {
-      const clientRef = window.fbDb.collection('clients').doc(user.uid);
-      await clientRef.set({
-        nome:         user.displayName || '',
-        email:        user.email       || '',
-        foto:         user.photoURL    || '',
-        ultimo_acesso: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-      /* Cria campo criado_em apenas na primeira vez (merge não sobrescreve se já existir) */
-      const snap = await clientRef.get();
-      if (!snap.data()?.criado_em) {
-        await clientRef.update({ criado_em: firebase.firestore.FieldValue.serverTimestamp() });
-      }
-    } catch (e) { /* Firestore indisponível — não bloqueia o login */ }
-
-    if (typeof loadCartFromFirestore === 'function') {
-      await loadCartFromFirestore();
-    }
-    if (window.__pendingCartAction) {
-      await executePendingCartAction();
-    }
-  } else {
-    if (previousUser && typeof clearLocalCart === 'function') {
-      clearLocalCart();
-    }
-  }
-});
+/* onAuthStateChanged está registrado dentro de setPersistence().finally() acima */
 
 /* ---- Delegação de cliques ---- */
 document.addEventListener('click', e => {
