@@ -85,8 +85,13 @@ function updateAuthUI() {
   document.body.classList.remove('auth-loading');
 }
 
-/* ---- Login com Google (popup — funciona em localhost e produção) ---- */
+/* ---- Login com Google ---- */
 const _PENDING_KEY = 'ts_pending_action';
+
+/* Detecta mobile: popup é bloqueado no Chrome/Safari mobile */
+function _isMobile() {
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+}
 
 function savePendingAction(action) {
   if (!action) return;
@@ -112,9 +117,32 @@ async function signInWithGoogle() {
   _loginInProgress = true;
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
+
+  /* Mobile: usa redirect (popup é bloqueado pelo Chrome/Safari mobile) */
+  if (_isMobile()) {
+    try {
+      await auth.signInWithRedirect(provider);
+    } catch (err) {
+      console.error('Login error (redirect):', err.code, err.message);
+      _loginInProgress = false;
+    }
+    return; /* redirect navega para fora da página — o finally não executa */
+  }
+
+  /* Desktop: tenta popup; se falhar por domínio/bloqueio cai para redirect */
   try {
     await auth.signInWithPopup(provider);
   } catch (err) {
+    const fallbackCodes = [
+      'auth/unauthorized-domain',
+      'auth/popup-blocked',
+      'auth/operation-not-supported-in-this-environment'
+    ];
+    if (fallbackCodes.includes(err.code)) {
+      /* Popup bloqueado ou domínio não autorizado: tenta redirect como fallback */
+      try { await auth.signInWithRedirect(provider); } catch(e) { /* sem-op */ }
+      return;
+    }
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
       console.error('Login error:', err.code, err.message);
     }
@@ -124,13 +152,18 @@ async function signInWithGoogle() {
 }
 window.signInWithGoogle = signInWithGoogle;
 
-/* Restaura ação pendente caso venha de um redirect antigo (sem bloquear nada) */
+/* Restaura resultado após signInWithRedirect (executa em toda carga de página) */
 auth.getRedirectResult().then(result => {
   if (result && result.user) {
     const saved = restorePendingAction();
     if (saved) window.__pendingCartAction = saved;
   }
-}).catch(() => { /* sem-op */ });
+}).catch(err => {
+  /* auth/unauthorized-domain via redirect = domínio não cadastrado no Firebase Console */
+  if (err && err.code && err.code !== 'auth/no-auth-event') {
+    console.error('[Auth] getRedirectResult error:', err.code);
+  }
+});
 
 /* Timeout de segurança: remove auth-loading após 4s máximo */
 setTimeout(() => {
