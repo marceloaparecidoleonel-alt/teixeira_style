@@ -977,6 +977,22 @@ svg { display: block; }
 /* ============================================================
    RESPONSIVE
    ============================================================ */
+
+/* No desktop a sidebar está sempre visível — esconde o toggle */
+@media (min-width: 769px) {
+  .topbar-toggle { display: none; }
+}
+
+/* Overlay escuro que fecha a sidebar ao clicar fora (mobile) */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 199;
+}
+.sidebar-overlay.active { display: block; }
+
 @media (max-width: 1100px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .dashboard-grid { grid-template-columns: 1fr; }
@@ -999,6 +1015,12 @@ svg { display: block; }
   .dashboard-grid { grid-template-columns: 1fr; }
   .order-status-row { flex-wrap: wrap; }
   .order-stat { min-width: calc(50% - 0.5rem); }
+  /* mini-table do dashboard: scroll horizontal em vez de overflow */
+  .dash-card { overflow-x: auto; }
+  /* table-footer: permite quebra em viewports estreitas */
+  .table-footer { flex-wrap: wrap; gap: 0.5rem; }
+  /* header-filters: permite quebra */
+  .header-filters { flex-wrap: wrap; }
 }
 
 @media (max-width: 600px) {

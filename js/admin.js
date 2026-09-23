@@ -190,7 +190,23 @@ document.querySelectorAll('[data-goto]').forEach(btn => {
   btn.addEventListener('click', () => goToPage(btn.dataset.goto));
 });
 document.getElementById('sidebarToggle')?.addEventListener('click', () => {
-  document.getElementById('sidebar')?.classList.toggle('open');
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  const isOpen = sb?.classList.toggle('open');
+  if (ov) ov.classList.toggle('active', !!isOpen);
+});
+document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebarOverlay')?.classList.remove('active');
+});
+/* Fecha sidebar ao navegar (mobile) */
+document.querySelectorAll('.sidebar__link[data-page]').forEach(link => {
+  link.addEventListener('click', () => {
+    if (window.innerWidth <= 768) {
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('active');
+    }
+  });
 });
 
 /* ============================================================
