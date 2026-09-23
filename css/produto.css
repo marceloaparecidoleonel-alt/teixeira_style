@@ -30,6 +30,11 @@
 
 /* ---- Ajustes visuais exclusivos da página de produto ---- */
 
+/* produto.html não tem .topbar: corrige top da navbar e padding-top do body
+   que foram definidos em catalogo.css assumindo topbar de 36px */
+.page-produto { padding-top: 0; }
+.page-produto .navbar { top: 0; }
+
 /* Esconde o botão de login, painel e o nome do usuário na navbar da página de produto */
 .page-produto .navbar__actions .auth-btn,
 .page-produto .navbar__actions .auth-name,
@@ -285,8 +290,8 @@
     gap: 2rem;
   }
   .produto-title { font-size: 2rem; }
-  /* topbar(36) + navbar(70) + folga = 116px */
-  .produto-page { padding: 7rem 1rem 3rem; }
+  /* navbar(70px) — sem topbar nesta página */
+  .produto-page { padding: 5rem 1rem 3rem; }
   /* Logo: reduz scale para não transbordar */
   .page-produto .navbar__logo { transform: scale(1.6); transform-origin: center; }
   .produto-gallery__thumbs { gap: 0.4rem; }
@@ -301,7 +306,7 @@
 }
 
 @media (max-width: 480px) {
-  .produto-page { padding: 7.5rem 0.75rem 2.5rem; }
+  .produto-page { padding: 5rem 0.75rem 2.5rem; }
   .produto-title { font-size: 1.75rem; }
   .produto-price { font-size: 1.6rem; }
   .page-produto .navbar__logo { transform: scale(1.4); }
