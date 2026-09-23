@@ -62,16 +62,24 @@ service cloud.firestore {
 
     // -------------------------------------------------------
     // Pedidos — somente autenticado
-    // Exceção: update de campos de status de pagamento permitido sem auth (webhook)
+    // Exceção 1: update de campos de pagamento/status permitido sem auth (webhook)
+    // Exceção 2: cliente autenticado pode ocultar SOMENTE o próprio pedido
+    //            escrevendo hiddenBy[uid]:true — nenhum outro campo pode ser alterado
     // -------------------------------------------------------
-    match /orders/{doc} {
+    match /orders/{orderId} {
       allow read, create: if request.auth != null;
-      allow update: if request.auth != null
-                    || (request.resource.data.diff(resource.data).affectedKeys()
-                        .hasOnly(['status','paymentStatus','paidAt',
-                                  'stockDecremented','mercadopagoPaymentId',
-                                  'paymentProvider','paymentMethod','externalReference',
-                                  'cancelledAt']));
+
+      // Admin / sistema autenticado: pode atualizar qualquer campo (igual ao original)
+      allow update: if request.auth != null;
+
+      // Webhook sem autenticação: apenas campos de pagamento/status e adminArchived
+      allow update: if request.auth == null
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['status','paymentStatus','paidAt',
+                                 'stockDecremented','mercadopagoPaymentId',
+                                 'paymentProvider','paymentMethod','externalReference',
+                                 'cancelledAt','adminArchived','archived_at']);
+
       allow delete: if request.auth != null;
     }
 

@@ -27,11 +27,18 @@ async function loadOrders(user) {
       return;
     }
     /* Ordena do mais recente para o mais antigo no cliente (evita índice composto) */
-    const docs = snap.docs.slice().sort((a, b) => {
+    const allDocs = snap.docs.slice().sort((a, b) => {
       const ta = a.data().created_at?.seconds || 0;
       const tb = b.data().created_at?.seconds || 0;
       return tb - ta;
     });
+
+    /* Filtra pedidos que o próprio cliente ocultou */
+    const docs = allDocs.filter(doc => {
+      const hb = doc.data().hiddenBy;
+      return !(hb && hb[user.uid] === true);
+    });
+
     const statusMap = {
       aguardando_confirmacao: 'Aguardando confirmação',
       aguardando_pagamento:   'Aguardando pagamento PIX',
@@ -49,6 +56,11 @@ async function loadOrders(user) {
       }
     });
 
+    if (!docs.length) {
+      listEl.innerHTML = '<p class="orders-empty">Nenhum pedido encontrado.</p>';
+      return;
+    }
+
     listEl.innerHTML = docs.map(doc => {
       const o        = doc.data();
       const d        = o.created_at ? new Date(o.created_at.seconds * 1000).toLocaleDateString('pt-BR') : '-';
@@ -58,7 +70,7 @@ async function loadOrders(user) {
         ? o.items.map(i => `<p>• ${i.qty}x ${i.name}${i.size ? ' (' + i.size + ')' : ''}</p>`).join('')
         : '';
       return `
-        <div class="order-card">
+        <div class="order-card" data-order-id="${doc.id}">
           <div class="order-card__header">
             <span class="order-card__id">#${doc.id.slice(-6)}</span>
             <span class="order-card__status order-card__status--${o.status}">${status}</span>
@@ -66,12 +78,43 @@ async function loadOrders(user) {
           <div class="order-card__meta"><span>${d}</span><span>${payLabel}</span></div>
           <div class="order-card__items">${itemsHtml}</div>
           <div class="order-card__total">Total: R$ ${Number(o.total || 0).toFixed(2).replace('.', ',')}</div>
+          <div class="order-card__actions">
+            <button class="order-hide-btn" data-id="${doc.id}" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:0.72rem;cursor:pointer;padding:0.4rem 0;margin-top:0.5rem;text-decoration:underline;">Ocultar pedido</button>
+          </div>
         </div>
       `;
     }).join('');
+
+    /* Listeners para ocultar pedido individualmente */
+    listEl.querySelectorAll('.order-hide-btn').forEach(btn => {
+      btn.addEventListener('click', () => hideOrder(btn.dataset.id, user.uid));
+    });
   } catch (err) {
     console.error('[Pedidos]', err);
     listEl.innerHTML = '<p class="orders-empty">Erro ao carregar pedidos.</p>';
+  }
+}
+
+/* ============================================================
+   Ocultar pedido do histórico do cliente
+   NÃO apaga o documento — apenas marca hiddenBy[uid]:true.
+   O Admin e outros sistemas continuam com acesso integral.
+   ============================================================ */
+async function hideOrder(orderId, uid) {
+  if (!confirm('Deseja remover este pedido do seu histórico?\n\nEsta ação pode ser revertida entrando em contato com a loja.')) return;
+  const db = window.fbDb;
+  if (!db || !orderId || !uid) return;
+  try {
+    await db.collection('orders').doc(orderId).update({
+      [`hiddenBy.${uid}`]: true
+    });
+    /* Re-renderiza a lista para refletir a ocultação */
+    if (window.fbAuth && window.fbAuth.currentUser) {
+      loadOrders(window.fbAuth.currentUser);
+    }
+  } catch (e) {
+    console.error('[Pedidos] Erro ao ocultar pedido:', e.message);
+    alert('Não foi possível ocultar o pedido. Tente novamente.');
   }
 }
 

@@ -1520,11 +1520,14 @@ function renderOrdersTable(docs) {
   const tbody = document.getElementById('ordersBody');
   if (!tbody) return;
 
-  /* Contador diário: pedidos criados hoje (não cancelados) */
+  /* Filtra pedidos arquivados pelo Admin — não aparecem na lista operacional */
+  const activeDocs = docs.filter(doc => !doc.data().adminArchived);
+
+  /* Contador diário: pedidos criados hoje (não cancelados, não arquivados) */
   const countEl = document.getElementById('ordersDailyCount');
   if (countEl) {
     const todayStr = new Date().toLocaleDateString('pt-BR'); /* DD/MM/YYYY no fuso local */
-    const todayCount = docs.filter(doc => {
+    const todayCount = activeDocs.filter(doc => {
       const o = doc.data();
       if (o.status === 'cancelado') return false;
       if (!o.created_at) return false;
@@ -1534,11 +1537,11 @@ function renderOrdersTable(docs) {
     countEl.textContent = `Hoje: ${todayCount} pedido${todayCount !== 1 ? 's' : ''}`;
   }
 
-  if (!docs.length) {
+  if (!activeDocs.length) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888">Nenhum pedido</td></tr>';
     return;
   }
-  tbody.innerHTML = docs.map(doc => {
+  tbody.innerHTML = activeDocs.map(doc => {
     const o  = doc.data();
     const d  = o.created_at ? new Date(o.created_at.seconds * 1000).toLocaleDateString('pt-BR') : '-';
     const payLabel = { whatsapp: 'WhatsApp', pix: 'PIX', mercadopago: 'Mercado Pago' }[o.payment] || o.payment || '-';
@@ -1623,21 +1626,30 @@ function loadOrders() {
    ORDERS — HISTÓRICO & LIMPEZA
    ============================================================ */
 
-/* Limpar pedidos: move todos para orders_history e remove de orders */
+/* Limpar pedidos: arquiva na view do Admin (adminArchived:true) SEM deletar de orders.
+   O pedido continua em orders para o histórico do cliente.
+   Também copia para orders_history para auditoria do Admin. */
 document.getElementById('btnLimparPedidos')?.addEventListener('click', async () => {
   const snap = await db.collection('orders').orderBy('created_at', 'desc').get();
-  if (snap.empty) { showToast('Nenhum pedido para limpar.'); return; }
-  if (!confirm(`Mover ${snap.size} pedido(s) para o histórico? Eles saem da lista ativa mas ficam salvos no histórico.`)) return;
+  /* Considera apenas pedidos que ainda não foram arquivados */
+  const toArchive = snap.docs.filter(doc => !doc.data().adminArchived);
+  if (!toArchive.length) { showToast('Nenhum pedido ativo para arquivar.'); return; }
+  if (!confirm(`Arquivar ${toArchive.length} pedido(s)? Eles saem da lista ativa do Admin mas continuam no histórico do cliente.`)) return;
   const batch = db.batch();
-  snap.docs.forEach(doc => {
+  toArchive.forEach(doc => {
+    /* Marca como arquivado — NÃO deleta o documento para preservar histórico do cliente */
+    batch.update(db.collection('orders').doc(doc.id), {
+      adminArchived: true,
+      archived_at:   firebase.firestore.FieldValue.serverTimestamp()
+    });
+    /* Copia para orders_history para auditoria do Admin */
     const histRef = db.collection('orders_history').doc(doc.id);
     batch.set(histRef, { ...doc.data(), archived_at: firebase.firestore.FieldValue.serverTimestamp() });
-    batch.delete(db.collection('orders').doc(doc.id));
   });
   try {
     await batch.commit();
-    showToast(`${snap.size} pedido(s) movido(s) para o histórico!`);
-  } catch (e) { showToast('Erro ao limpar pedidos.', 'error'); console.error(e); }
+    showToast(`${toArchive.length} pedido(s) arquivado(s)!`);
+  } catch (e) { showToast('Erro ao arquivar pedidos.', 'error'); console.error(e); }
 });
 
 /* Ver Histórico: abre modal com pedidos arquivados */
