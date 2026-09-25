@@ -306,11 +306,11 @@ button {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  z-index: 1001;
-  background: var(--color-gold);
+  right: 0;
   height: 34px;
-  overflow: hidden;
+  background: #0b0b0f;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  z-index: 1001;
   display: flex;
   align-items: center;
 }
