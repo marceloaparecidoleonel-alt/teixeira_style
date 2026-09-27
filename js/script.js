@@ -385,10 +385,14 @@ let _heroCurrentSlide   = 0;
 let _heroSlidesLoaded   = false; /* evita chamadas duplas simultâneas */
 
 function initHeroSlideshow() {
-  if (_heroSlideshowTimer) return; /* já existe um timer — não duplicar */
-
   const slides = document.querySelectorAll('#heroSlides .hero__slide');
   if (slides.length === 0) return; /* sem slides ainda — loadHeroSlides() chama depois */
+
+  /* Limpa timer anterior se existir (evita múltiplos intervalos) */
+  if (_heroSlideshowTimer) {
+    clearInterval(_heroSlideshowTimer);
+    _heroSlideshowTimer = null;
+  }
 
   /* Ativa o primeiro slide */
   slides.forEach((s, i) => s.classList.toggle('hero__slide--active', i === 0));
