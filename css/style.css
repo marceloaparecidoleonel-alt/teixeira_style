@@ -631,11 +631,13 @@ button {
   position: absolute;
   inset: 0;
   opacity: 0;
+  z-index: 1;
   transition: opacity 1.4s ease;
 }
 
 .hero__slide--active {
   opacity: 1;
+  z-index: 2;
 }
 
 .hero__slide-img {
