@@ -403,9 +403,70 @@ function initHeroSlideshow() {
   _heroSlideshowTimer = setInterval(() => {
     const all = document.querySelectorAll('#heroSlides .hero__slide');
     if (all.length < 2) return;
+
+    const previousIndex = _heroCurrentSlide;
     all[_heroCurrentSlide].classList.remove('hero__slide--active');
     _heroCurrentSlide = (_heroCurrentSlide + 1) % all.length;
     all[_heroCurrentSlide].classList.add('hero__slide--active');
+
+    /* === DIAGNÓSTICO RUNTIME === */
+    console.log('[Hero Runtime] Índice atual:', _heroCurrentSlide, 'Total:', all.length);
+
+    /* Estilos computados de cada slide */
+    console.log('[Hero Runtime] Slides detalhados:', Array.from(all).map((slide, i) => {
+      const computed = getComputedStyle(slide);
+      return {
+        index: i,
+        id: slide.dataset.galleryId,
+        active: slide.classList.contains('hero__slide--active'),
+        opacity: computed.opacity,
+        zIndex: computed.zIndex,
+        visibility: computed.visibility,
+        display: computed.display,
+        position: computed.position,
+        src: slide.querySelector('img')?.src
+      };
+    }));
+
+    /* URLs das imagens */
+    Array.from(all).forEach((slide, i) => {
+      console.log(`[Hero Runtime] IMAGE ${i}:`, slide.querySelector('img')?.src);
+    });
+
+    /* Estilos computados do container pai */
+    const container = document.getElementById('heroSlides');
+    if (container) {
+      const containerComputed = getComputedStyle(container);
+      console.log('[Hero Runtime] Container #heroSlides:', {
+        position: containerComputed.position,
+        zIndex: containerComputed.zIndex,
+        opacity: containerComputed.opacity,
+        visibility: containerComputed.visibility,
+        display: containerComputed.display,
+        overflow: containerComputed.overflow
+      });
+    }
+
+    /* Estilos computados de elementos acima */
+    const overlay = document.querySelector('.hero__overlay');
+    if (overlay) {
+      const overlayComputed = getComputedStyle(overlay);
+      console.log('[Hero Runtime] .hero__overlay:', {
+        position: overlayComputed.position,
+        zIndex: overlayComputed.zIndex,
+        opacity: overlayComputed.opacity,
+        visibility: overlayComputed.visibility,
+        display: overlayComputed.display
+      });
+    }
+
+    /* === TESTE TEMPORÁRIO COM INLINE STYLES === */
+    console.log('[Hero Runtime] Aplicando teste inline styles...');
+    all[previousIndex].style.opacity = '0';
+    all[previousIndex].style.zIndex = '1';
+    all[_heroCurrentSlide].style.opacity = '1';
+    all[_heroCurrentSlide].style.zIndex = '999';
+    console.log('[Hero Runtime] Inline styles aplicados - slide', _heroCurrentSlide, 'deve estar visível');
   }, 5000);
 }
 
