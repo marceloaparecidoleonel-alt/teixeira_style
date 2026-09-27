@@ -467,6 +467,53 @@ function initHeroSlideshow() {
     all[_heroCurrentSlide].style.opacity = '1';
     all[_heroCurrentSlide].style.zIndex = '999';
     console.log('[Hero Runtime] Inline styles aplicados - slide', _heroCurrentSlide, 'deve estar visível');
+
+    /* === TESTE: QUAL ELEMENTO ESTÁ NO TOPO DA PILHA VISUAL === */
+    const activeSlide = all[_heroCurrentSlide];
+    const rect = activeSlide.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const topElement = document.elementFromPoint(centerX, centerY);
+
+    console.log('[Hero Visual Test]', {
+      activeIndex: _heroCurrentSlide,
+      activeClass: activeSlide.className,
+      activeOpacity: getComputedStyle(activeSlide).opacity,
+      activeZIndex: getComputedStyle(activeSlide).zIndex,
+      activeRect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+      centerPoint: { x: centerX, y: centerY },
+      elementAtCenter: topElement,
+      elementAtCenterTag: topElement?.tagName,
+      elementAtCenterClass: topElement?.className,
+      elementAtCenterId: topElement?.id
+    });
+
+    /* === TESTE: IMAGEM CARREGOU? === */
+    const img = activeSlide.querySelector('.hero__slide-img');
+    console.log('[Hero Image Test]', {
+      complete: img?.complete,
+      naturalWidth: img?.naturalWidth,
+      naturalHeight: img?.naturalHeight,
+      currentSrc: img?.currentSrc,
+      display: img ? getComputedStyle(img).display : null,
+      opacity: img ? getComputedStyle(img).opacity : null,
+      visibility: img ? getComputedStyle(img).visibility : null,
+      zIndex: img ? getComputedStyle(img).zIndex : null
+    });
+
+    /* === TESTE TEMPORÁRIO: OCULTAR OVERLAY === */
+    const overlay = document.querySelector('.hero__overlay');
+    if (overlay) {
+      overlay.style.setProperty('display', 'none', 'important');
+      console.log('[Hero Runtime] .hero__overlay temporariamente ocultado');
+    }
+
+    /* === TESTE TEMPORÁRIO: FORÇAR ESTILOS COM !IMPORTANT === */
+    all.forEach((slide, i) => {
+      slide.style.setProperty('opacity', i === _heroCurrentSlide ? '1' : '0', 'important');
+      slide.style.setProperty('z-index', i === _heroCurrentSlide ? '9999' : '1', 'important');
+    });
+    console.log('[Hero Runtime] Estilos !important aplicados a todos os slides');
   }, 5000);
 }
 
