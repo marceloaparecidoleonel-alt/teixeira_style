@@ -385,11 +385,17 @@ let _heroCurrentSlide   = 0;
 let _heroSlidesLoaded   = false; /* evita chamadas duplas simultâneas */
 
 function initHeroSlideshow() {
+  console.log('[Hero Debug] initHeroSlideshow chamada');
   const slides = document.querySelectorAll('#heroSlides .hero__slide');
-  if (slides.length === 0) return; /* sem slides ainda — loadHeroSlides() chama depois */
+  console.log('[Hero Debug] Slides encontrados:', slides.length);
+  if (slides.length === 0) {
+    console.log('[Hero Debug] Sem slides no DOM - retornando');
+    return; /* sem slides ainda — loadHeroSlides() chama depois */
+  }
 
   /* Limpa timer anterior se existir (evita múltiplos intervalos) */
   if (_heroSlideshowTimer) {
+    console.log('[Hero Debug] Timer anterior existe, limpando');
     clearInterval(_heroSlideshowTimer);
     _heroSlideshowTimer = null;
   }
@@ -397,16 +403,32 @@ function initHeroSlideshow() {
   /* Ativa o primeiro slide */
   slides.forEach((s, i) => s.classList.toggle('hero__slide--active', i === 0));
   _heroCurrentSlide = 0;
+  console.log('[Hero Debug] Primeiro slide ativado, índice:', _heroCurrentSlide);
+  console.log('[Hero Debug] Classe do primeiro slide:', slides[0].className);
 
-  if (slides.length < 2) return; /* apenas 1 slide — não precisa de timer */
+  if (slides.length < 2) {
+    console.log('[Hero Debug] Apenas 1 slide, não criando timer');
+    return; /* apenas 1 slide — não precisa de timer */
+  }
 
+  console.log('[Hero Debug] Criando timer de 5000ms');
   _heroSlideshowTimer = setInterval(() => {
+    console.log('[Hero Debug] Timer executou - índice atual:', _heroCurrentSlide);
     const all = document.querySelectorAll('#heroSlides .hero__slide');
-    if (all.length < 2) return;
+    console.log('[Hero Debug] Slides no DOM no momento:', all.length);
+    if (all.length < 2) {
+      console.log('[Hero Debug] Menos de 2 slides, não trocando');
+      return;
+    }
+    console.log('[Hero Debug] Removendo classe active do slide', _heroCurrentSlide);
     all[_heroCurrentSlide].classList.remove('hero__slide--active');
     _heroCurrentSlide = (_heroCurrentSlide + 1) % all.length;
+    console.log('[Hero Debug] Novo índice:', _heroCurrentSlide);
+    console.log('[Hero Debug] Adicionando classe active ao slide', _heroCurrentSlide);
     all[_heroCurrentSlide].classList.add('hero__slide--active');
+    console.log('[Hero Debug] Classe do slide ativo:', all[_heroCurrentSlide].className);
   }, 5000);
+  console.log('[Hero Debug] Timer criado com sucesso');
 }
 
 /* Adiciona slides da Galeria ao slideshow base.
