@@ -734,6 +734,8 @@ async function openEditProduct(id) {
     document.getElementById('modalProductPrice').value = p.price != null ? p.price : '';
     document.getElementById('modalProductDesc').value  = p.description || '';
     document.getElementById('modalProductStock').value = p.stock != null ? p.stock : (p.availability === 'available' ? 10 : 0);
+    const featuredEl = document.getElementById('modalProductFeatured');
+    if (featuredEl) featuredEl.checked = p.featured === true; /* campo inexistente = não destaque */
     setSelectedSizes(p.sizes || '');
     /* Carrega URLs existentes: prioriza array images[], fallback image_url */
     const urls = Array.isArray(p.images) && p.images.length ? p.images : (p.image_url ? [p.image_url] : []);
@@ -825,6 +827,9 @@ document.getElementById('productForm')?.addEventListener('submit', async e => {
       images: existingImageUrls, /* array de até 4 URLs — compat. com produto.js */
       updated_at: firebase.firestore.FieldValue.serverTimestamp()
     };
+    /* "Produto em destaque" — controla a seção Destaques da HOME */
+    const featuredCheck = document.getElementById('modalProductFeatured');
+    if (featuredCheck) data.featured = featuredCheck.checked;
 
     /* 5. Salvar no Firestore */
     if (editingProductId) {

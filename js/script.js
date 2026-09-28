@@ -754,7 +754,7 @@ async function loadHighlights() {
   try {
     const db = window.fbDb;
     if (!db) return;
-    const snap = await db.collection('products').where('status', '==', 'active').limit(6).get();
+    const snap = await db.collection('products').where('status', '==', 'active').where('featured', '==', true).limit(6).get();
     if (snap.empty) return;
     const products = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const featured = products.slice(0, 6);
