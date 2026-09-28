@@ -308,7 +308,7 @@ button {
   left: 0;
   right: 0;
   height: 34px;
-  background: #0b0b0f;
+  background: var(--color-gold);
   border-bottom: 1px solid rgba(255,255,255,0.08);
   z-index: 1001;
   display: flex;
@@ -347,12 +347,8 @@ button {
   flex-shrink: 0;
 }
 
-/* Fundo escuro fixo (#0b0b0f): texto claro para ficar legível. O settings-loader.js injeta
-   .topbar__item/.topbar__sep escuros (calculados para fundo na cor de destaque); estes
-   seletores são mais específicos. Sem seleção de texto (realce azul) na faixa animada. */
+/* Sem seleção de texto (realce azul do navegador) na faixa animada. */
 .topbar { -webkit-user-select: none; user-select: none; }
-.topbar .topbar__item { color: #FFFFFF !important; }
-.topbar .topbar__sep  { color: rgba(255,255,255,0.35) !important; }
 
 @keyframes marquee {
   0%   { transform: translateX(0); }
