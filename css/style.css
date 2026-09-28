@@ -347,6 +347,13 @@ button {
   flex-shrink: 0;
 }
 
+/* Fundo escuro fixo (#0b0b0f): texto claro para ficar legível. O settings-loader.js injeta
+   .topbar__item/.topbar__sep escuros (calculados para fundo na cor de destaque); estes
+   seletores são mais específicos. Sem seleção de texto (realce azul) na faixa animada. */
+.topbar { -webkit-user-select: none; user-select: none; }
+.topbar .topbar__item { color: #FFFFFF !important; }
+.topbar .topbar__sep  { color: rgba(255,255,255,0.35) !important; }
+
 @keyframes marquee {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
