@@ -460,14 +460,6 @@ function initHeroSlideshow() {
       });
     }
 
-    /* === TESTE TEMPORÁRIO COM INLINE STYLES === */
-    console.log('[Hero Runtime] Aplicando teste inline styles...');
-    all[previousIndex].style.opacity = '0';
-    all[previousIndex].style.zIndex = '1';
-    all[_heroCurrentSlide].style.opacity = '1';
-    all[_heroCurrentSlide].style.zIndex = '999';
-    console.log('[Hero Runtime] Inline styles aplicados - slide', _heroCurrentSlide, 'deve estar visível');
-
     /* === TESTE: QUAL ELEMENTO ESTÁ NO TOPO DA PILHA VISUAL === */
     const activeSlide = all[_heroCurrentSlide];
     const rect = activeSlide.getBoundingClientRect();
@@ -500,20 +492,6 @@ function initHeroSlideshow() {
       visibility: img ? getComputedStyle(img).visibility : null,
       zIndex: img ? getComputedStyle(img).zIndex : null
     });
-
-    /* === TESTE TEMPORÁRIO: OCULTAR OVERLAY === */
-    const overlay = document.querySelector('.hero__overlay');
-    if (overlay) {
-      overlay.style.setProperty('display', 'none', 'important');
-      console.log('[Hero Runtime] .hero__overlay temporariamente ocultado');
-    }
-
-    /* === TESTE TEMPORÁRIO: FORÇAR ESTILOS COM !IMPORTANT === */
-    all.forEach((slide, i) => {
-      slide.style.setProperty('opacity', i === _heroCurrentSlide ? '1' : '0', 'important');
-      slide.style.setProperty('z-index', i === _heroCurrentSlide ? '9999' : '1', 'important');
-    });
-    console.log('[Hero Runtime] Estilos !important aplicados a todos os slides');
   }, 5000);
 }
 
