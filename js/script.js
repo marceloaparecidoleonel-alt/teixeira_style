@@ -695,21 +695,6 @@ function initSearch() {
    12. CATEGORIAS DINÂMICAS
    ============================================================ */
 
-/* Fallback por slug — usado quando a categoria ainda não tem imagem no Firestore */
-const CAT_FALLBACK_IMGS = {
-  streetwear: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=80',
-  casual:     'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&q=80',
-  tenis:      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
-  esportivo:  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80',
-  infantil:   'https://images.unsplash.com/photo-1476234251651-f353703a034d?w=600&q=80',
-  cueca:      'https://images.unsplash.com/photo-1617952739218-c1b0fc50b5d8?w=600&q=80',
-  meia:       'https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=600&q=80',
-  bone:       'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600&q=80',
-  relogios:   'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
-  oculos:     'https://images.unsplash.com/photo-1508296695146-257a814070b4?w=600&q=80'
-};
-const CAT_IMG_DEFAULT = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80';
-
 async function loadHomeCategories() {
   const grid = document.getElementById('categoriesGrid');
   if (!grid) return;
@@ -718,11 +703,14 @@ async function loadHomeCategories() {
   try {
     const snap = await db.collection('categories').orderBy('name').get();
     if (snap.empty) return;
-    const cards = snap.docs.map((doc, i) => {
+    /* Somente categorias reais: 1 documento com nome e imagem própria = 1 card.
+       Sem imagem de fallback — categoria sem image_url não é exibida na Home. */
+    const cards = snap.docs.filter(doc => {
+      const c = doc.data();
+      return c.name && c.image_url;
+    }).map((doc, i) => {
       const c    = doc.data();
-      const slug = c.slug || '';
-      /* Prioridade: imagem do Firestore → fallback pelo slug → fallback genérico */
-      const img  = c.image_url || CAT_FALLBACK_IMGS[slug] || CAT_IMG_DEFAULT;
+      const img  = c.image_url;
       const delay = (i * 0.1).toFixed(1);
       return `<div class="category-card reveal" style="--delay: ${delay}s">
         <div class="category-card__img-wrap">
